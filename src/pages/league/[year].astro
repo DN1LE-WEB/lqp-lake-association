@@ -30,7 +30,7 @@ const nextSeason = await db.prepare(
   "SELECT year FROM fishing_league WHERE year > ? AND visible = 1 ORDER BY year ASC LIMIT 1"
 ).bind(yearNum).first();
 
-const renderedWriteup = await processMarkdown(season.writeup as string);
+const renderedContent = await processMarkdown(season.content as string);
 ---
 
 <BaseLayout title={season.title as string}>
@@ -49,7 +49,7 @@ const renderedWriteup = await processMarkdown(season.writeup as string);
       </div>
     )}
 
-    {renderedWriteup && (
+    {renderedContent && (
       <article
         class="prose prose-base max-w-none
           prose-headings:font-display prose-headings:text-[#1a1a1a]
@@ -60,7 +60,7 @@ const renderedWriteup = await processMarkdown(season.writeup as string);
           prose-strong:text-[#1a1a1a] prose-strong:font-semibold
           prose-ol:pl-6 prose-ol:space-y-0.5
           prose-li:text-prairie prose-li:text-sm"
-        set:html={renderedWriteup}
+        set:html={renderedContent}
       />
     )}
 

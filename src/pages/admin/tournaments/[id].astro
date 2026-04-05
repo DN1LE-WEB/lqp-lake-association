@@ -33,7 +33,6 @@ if (!isNew) {
       visible={isNew ? true : Boolean(tournament.visible)}
       results_url={isNew ? '' : (tournament.results_url as string || '')}
       roster={isNew ? '' : (tournament.roster as string || '')}
-      writeup={isNew ? '' : (tournament.writeup as string || '')}
     />
   </div>
 </AdminLayout>

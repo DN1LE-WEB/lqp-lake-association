@@ -6,16 +6,16 @@ import { getDB } from '../lib/db';
 
 const db = getDB(Astro);
 const { results: tournaments } = await db.prepare(
-  "SELECT id, title, year, date, writeup, results_url FROM tournaments WHERE visible = 1 ORDER BY year DESC"
+  "SELECT id, title, year, date, content, results_url FROM tournaments WHERE visible = 1 ORDER BY year DESC"
 ).all();
 
 const featured = tournaments.length > 0 ? tournaments[0] : null;
 const past = tournaments.slice(1);
 
-function getPreview(writeup: string | null): string {
-  if (!writeup) return '';
+function getPreview(content: string | null): string {
+  if (!content) return '';
   // Strip markdown formatting for preview
-  const plain = writeup
+  const plain = content
     .replace(/!\[.*?\]\(.*?\)/g, '')  // images
     .replace(/\[([^\]]*)\]\(.*?\)/g, '$1')  // links
     .replace(/[#*_~`]/g, '')  // formatting chars
@@ -38,8 +38,8 @@ function getPreview(writeup: string | null): string {
             {new Date(featured.date as string + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         )}
-        {featured.writeup && (
-          <p class="mt-3 text-prairie leading-relaxed">{getPreview(featured.writeup as string)}</p>
+        {featured.content && (
+          <p class="mt-3 text-prairie leading-relaxed">{getPreview(featured.content as string)}</p>
         )}
         <span class="mt-4 inline-block text-sm font-semibold text-teal">View details &rarr;</span>
       </a>
@@ -71,8 +71,8 @@ function getPreview(writeup: string | null): string {
                 </div>
                 <span class="text-sm font-semibold text-teal">&rarr;</span>
               </div>
-              {t.writeup && (
-                <p class="mt-2 text-sm text-prairie leading-relaxed">{getPreview(t.writeup as string)}</p>
+              {t.content && (
+                <p class="mt-2 text-sm text-prairie leading-relaxed">{getPreview(t.content as string)}</p>
               )}
             </a>
           ))}

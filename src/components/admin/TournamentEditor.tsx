@@ -19,10 +19,9 @@ interface Props {
   visible: boolean;
   results_url: string;
   roster: string;
-  writeup: string;
 }
 
-export default function TournamentEditor({ id, title, year, annual_number, date, content, visible, results_url, roster, writeup }: Props) {
+export default function TournamentEditor({ id, title, year, annual_number, date, content, visible, results_url, roster }: Props) {
   const isNew = id === 'new';
 
   const [currentTitle, setCurrentTitle] = useState(title);
@@ -33,7 +32,6 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
   const [currentVisible, setCurrentVisible] = useState(visible);
   const [currentResultsUrl, setCurrentResultsUrl] = useState(results_url);
   const [currentRoster, setCurrentRoster] = useState(roster);
-  const [currentWriteup, setCurrentWriteup] = useState(writeup);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -64,7 +62,6 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
         visible: currentVisible,
         results_url: currentResultsUrl || null,
         roster: currentRoster || null,
-        writeup: currentWriteup || null,
       };
 
       let res: Response;
@@ -251,22 +248,6 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
         />
       </div>
 
-      {/* Writeup */}
-      <div style={{ marginBottom: 20 }}>
-        <label style={labelStyle}>Writeup (plain text)</label>
-        <textarea
-          value={currentWriteup}
-          onChange={(e) => setCurrentWriteup(e.target.value)}
-          placeholder="Tournament recap or description..."
-          rows={6}
-          style={{
-            ...inputStyle,
-            resize: 'vertical' as const,
-            fontFamily: 'inherit',
-          }}
-        />
-      </div>
-
       {/* Roster */}
       <div style={{ marginBottom: 20 }}>
         <label style={labelStyle}>Roster (plain text, one entry per line)</label>
@@ -313,8 +294,8 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
 
       {/* Content editor (rich text) */}
       <div style={{ marginBottom: 20 }}>
-        <label style={labelStyle}>Rich Content (optional)</label>
-        <Editor content={currentContent} onChange={setCurrentContent} placeholder="Tournament details, results, download links..." />
+        <label style={labelStyle}>Content</label>
+        <Editor content={currentContent} onChange={setCurrentContent} placeholder="Tournament recap, details, results, download links..." />
       </div>
     </div>
   );

@@ -8,10 +8,9 @@ interface Props {
   results_url: string;
   content: string;
   visible: boolean;
-  writeup: string;
 }
 
-export default function LeagueEditor({ id, title, year, results_url, content, visible, writeup }: Props) {
+export default function LeagueEditor({ id, title, year, results_url, content, visible }: Props) {
   const isNew = id === 'new';
 
   const [currentTitle, setCurrentTitle] = useState(title);
@@ -19,7 +18,6 @@ export default function LeagueEditor({ id, title, year, results_url, content, vi
   const [currentResultsUrl, setCurrentResultsUrl] = useState(results_url);
   const [currentContent, setCurrentContent] = useState(content);
   const [currentVisible, setCurrentVisible] = useState(visible);
-  const [currentWriteup, setCurrentWriteup] = useState(writeup);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -37,7 +35,6 @@ export default function LeagueEditor({ id, title, year, results_url, content, vi
         results_url: currentResultsUrl || null,
         content: currentContent,
         visible: currentVisible,
-        writeup: currentWriteup || null,
       };
 
       let res: Response;
@@ -203,26 +200,10 @@ export default function LeagueEditor({ id, title, year, results_url, content, vi
         </div>
       </div>
 
-      {/* Writeup */}
-      <div style={{ marginBottom: 20 }}>
-        <label style={labelStyle}>Writeup (plain text)</label>
-        <textarea
-          value={currentWriteup}
-          onChange={(e) => setCurrentWriteup(e.target.value)}
-          placeholder="Season recap or description..."
-          rows={6}
-          style={{
-            ...inputStyle,
-            resize: 'vertical' as const,
-            fontFamily: 'inherit',
-          }}
-        />
-      </div>
-
       {/* Content editor (rich text) */}
       <div style={{ marginBottom: 20 }}>
-        <label style={labelStyle}>Rich Content (optional - weekly results, etc.)</label>
-        <Editor content={currentContent} onChange={setCurrentContent} placeholder="Season details, weekly results, etc..." />
+        <label style={labelStyle}>Content</label>
+        <Editor content={currentContent} onChange={setCurrentContent} placeholder="Season recap, details, weekly results, etc..." />
       </div>
     </div>
   );
