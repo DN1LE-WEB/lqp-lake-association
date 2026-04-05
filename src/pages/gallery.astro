@@ -1,45 +1,76 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { getDB } from '../lib/db';
 
-const photos = [
-  { src: '/images/original/7332574_orig.jpg', alt: 'Walleye catch' },
-  { src: '/images/original/4432214_orig.jpg', alt: 'Fishing on the lake' },
-  { src: '/images/original/2201075_orig.jpg', alt: 'Walleye stocking' },
-  { src: '/images/original/3946451_orig.jpg', alt: 'Lake fishing' },
-  { src: '/images/original/3848027_orig.jpg', alt: 'Walleye' },
-  { src: '/images/original/9830291_orig.jpg', alt: 'On the water' },
-  { src: '/images/original/9017893.jpg', alt: 'Fish catch' },
-  { src: '/images/original/3489574.jpg', alt: 'Fishing day' },
-  { src: '/images/original/8751468.jpg', alt: 'Lake scene' },
-  { src: '/images/original/8220424.jpg', alt: 'Walleye fishing' },
-  { src: '/images/original/5632435.jpg', alt: 'Lake life' },
-  { src: '/images/original/3067261.jpg', alt: 'Catch of the day' },
-  { src: '/images/original/2610052.jpg', alt: 'Fishing tournament' },
-  { src: '/images/original/5212197.jpg', alt: 'Weigh-in' },
-  { src: '/images/original/8077812.jpg', alt: 'Lake activity' },
-  { src: '/images/original/2162438.jpg', alt: 'Fish' },
-  { src: '/images/original/5531282.jpg', alt: 'On the lake' },
-  { src: '/images/original/3320413067264908347_orig.jpg', alt: 'Walleye stocking event' },
-];
+const db = getDB(Astro);
+const { results: albums } = await db.prepare(
+  "SELECT * FROM gallery_albums WHERE visible = 1 ORDER BY sort_order"
+).all();
+
+// Get photos for each album
+const albumsWithPhotos = await Promise.all(albums.map(async (album: any) => {
+  const { results: photos } = await db.prepare(
+    "SELECT * FROM gallery_photos WHERE album_id = ? ORDER BY sort_order"
+  ).bind(album.id).all();
+  return { ...album, photos };
+}));
+
+// Flatten all photos for the masonry layout if only one album,
+// or group by album if multiple
+const hasMultipleAlbums = albumsWithPhotos.filter((a: any) => a.photos.length > 0).length > 1;
 ---
 
 <BaseLayout title="Photo Gallery">
   <PageHeader title="Photo Gallery" subtitle="Scenes from Lac Qui Parle Lake and our community events." />
 
   <section class="mx-auto max-w-[1100px] px-6 pb-10 lg:px-12">
-    <div class="columns-2 gap-3.5 sm:columns-3 lg:columns-4">
-      {photos.map(photo => (
-        <div class="mb-3.5 break-inside-avoid overflow-hidden rounded-[10px] border border-teal-border">
-          <img
-            src={photo.src}
-            alt={photo.alt}
-            class="w-full object-cover transition-transform duration-300 hover:scale-105"
-            loading="lazy"
-          />
+    {hasMultipleAlbums ? (
+      albumsWithPhotos.filter((album: any) => album.photos.length > 0).map((album: any) => (
+        <div class="mb-10">
+          <h2 class="font-display font-bold text-navy text-xl mb-1">{album.title}</h2>
+          {album.description && (
+            <p class="text-sm text-prairie mb-4">{album.description}</p>
+          )}
+          <div class="columns-2 gap-3.5 sm:columns-3 lg:columns-4">
+            {album.photos.map((photo: any) => (
+              <div class="mb-3.5 break-inside-avoid overflow-hidden rounded-[10px] border border-teal-border">
+                <img
+                  src={photo.url}
+                  alt={photo.caption || album.title}
+                  class="w-full object-cover transition-transform duration-300 hover:scale-105"
+                  loading="lazy"
+                />
+                {photo.caption && (
+                  <div class="px-2 py-1.5 text-xs text-prairie bg-white">{photo.caption}</div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-    </div>
+      ))
+    ) : (
+      <div class="columns-2 gap-3.5 sm:columns-3 lg:columns-4">
+        {albumsWithPhotos.flatMap((album: any) => album.photos).map((photo: any) => (
+          <div class="mb-3.5 break-inside-avoid overflow-hidden rounded-[10px] border border-teal-border">
+            <img
+              src={photo.url}
+              alt={photo.caption || 'Gallery photo'}
+              class="w-full object-cover transition-transform duration-300 hover:scale-105"
+              loading="lazy"
+            />
+          </div>
+        ))}
+      </div>
+    )}
+
+    {albumsWithPhotos.every((a: any) => a.photos.length === 0) && (
+      <div class="text-center py-12 text-prairie">
+        <p>No photos available yet. Check back soon!</p>
+      </div>
+    )}
   </section>
 
   <div class="mt-10 text-center pb-10">

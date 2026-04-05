@@ -1,0 +1,40 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+import GalleryEditor from '../../../components/admin/GalleryEditor';
+
+const { id } = Astro.params;
+const isNew = id === 'new';
+
+let album: any = null;
+let photos: any[] = [];
+
+if (!isNew) {
+  const db = getDB(Astro);
+  album = await db.prepare("SELECT * FROM gallery_albums WHERE id = ?").bind(id).first();
+  if (!album) {
+    return Astro.redirect('/admin/gallery');
+  }
+  const result = await db.prepare(
+    "SELECT * FROM gallery_photos WHERE album_id = ? ORDER BY sort_order"
+  ).bind(id).all();
+  photos = result.results as any[];
+}
+---
+
+<AdminLayout title={isNew ? 'New Album' : `Edit: ${album.title}`}>
+  <div class="max-w-4xl">
+    <div class="mb-4">
+      <a href="/admin/gallery" class="text-sm text-teal hover:underline">&larr; Back to Gallery</a>
+    </div>
+    <GalleryEditor
+      client:only="react"
+      id={isNew ? 'new' : String(album.id)}
+      title={isNew ? '' : (album.title as string)}
+      description={isNew ? '' : (album.description as string || '')}
+      visible={isNew ? true : Boolean(album.visible)}
+      photos={isNew ? [] : photos}
+    />
+  </div>
+</AdminLayout>
