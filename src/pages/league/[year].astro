@@ -3,7 +3,7 @@ export const prerender = false;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { getDB } from '../../lib/db';
-import { marked } from 'marked';
+import { processMarkdown } from '../../lib/process-markdown';
 
 const { year } = Astro.params;
 const yearNum = parseInt(year!, 10);
@@ -22,7 +22,6 @@ if (!season) {
   return Astro.redirect('/fishing-league');
 }
 
-// Get prev/next years for navigation
 const prevSeason = await db.prepare(
   "SELECT year FROM fishing_league WHERE year < ? AND visible = 1 ORDER BY year DESC LIMIT 1"
 ).bind(yearNum).first();
@@ -31,89 +30,58 @@ const nextSeason = await db.prepare(
   "SELECT year FROM fishing_league WHERE year > ? AND visible = 1 ORDER BY year ASC LIMIT 1"
 ).bind(yearNum).first();
 
-// Process writeup: fix image URLs, strip nav content, render markdown
-let renderedWriteup = '';
-if (season.writeup) {
-  let md = (season.writeup as string)
-    // Replace old lqplake.org image URLs with local paths
-    .replace(/http:\/\/www\.lqplake\.org\/uploads\/1\/8\/0\/2\/18024505\//g, '/images/tournaments/')
-    // Strip query params from image URLs
-    .replace(/(\/images\/tournaments\/[^\s)]+)\?\d+/g, '$1');
-
-  // Strip nav lines
-  const lines = md.split('\n').filter(line => {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('- [Our Mission]')) return false;
-    if (trimmed.startsWith('- [LQP Fishing League')) return false;
-    if (trimmed.startsWith('- [46th Annual')) return false;
-    if (trimmed.startsWith('- [45th Annual')) return false;
-    if (trimmed.startsWith('- [44th Annual')) return false;
-    if (trimmed.startsWith('- [43rd Annual')) return false;
-    if (trimmed.startsWith('- [42nd Annual')) return false;
-    if (trimmed.startsWith('- [41st Annual')) return false;
-    if (trimmed.startsWith('- [40th Annual')) return false;
-    if (trimmed.startsWith('- [39th Annual')) return false;
-    if (trimmed.startsWith('- [38th Annual')) return false;
-    if (trimmed.startsWith('- [37th Annual')) return false;
-    if (trimmed.startsWith('- [36th Annual')) return false;
-    if (trimmed.startsWith('- [35th Annual')) return false;
-    if (trimmed.startsWith('- [34th Annual')) return false;
-    if (trimmed.startsWith('- [33rd Annual')) return false;
-    return true;
-  });
-  md = lines.join('\n');
-
-  renderedWriteup = await marked.parse(md);
-}
+const renderedWriteup = await processMarkdown(season.writeup as string);
 ---
 
 <BaseLayout title={season.title as string}>
   <PageHeader title={season.title as string} />
 
-  <section class="mx-auto max-w-[1000px] px-6 pb-10 lg:px-12">
-    <div class="rounded-[14px] border border-teal-border/10 bg-white p-8">
-
-      {renderedWriteup && (
-        <div class="mt-4 prose prose-sm max-w-none text-prairie
-          prose-headings:font-display prose-headings:text-[#1a1a1a]
-          prose-a:text-teal prose-a:underline
-          prose-img:rounded-[10px] prose-img:border prose-img:border-teal-border
-          prose-strong:text-[#1a1a1a]"
-          set:html={renderedWriteup}
-        />
-      )}
-
-      {season.results_url && (
-        <div class="mt-6">
-          <a
-            href={season.results_url as string}
-            target="_blank"
-            class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white"
-          >
-            View League Results
-          </a>
-        </div>
-      )}
-
-      <!-- Navigation -->
-      <div class="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-teal-border/10 pt-6">
-        <div>
-          {prevSeason && (
-            <a href={`/league/${prevSeason.year}`} class="text-sm font-semibold text-teal hover:underline">
-              &larr; {prevSeason.year} League
-            </a>
-          )}
-        </div>
-        <a href="/fishing-league" class="text-sm font-semibold text-[#1a1a1a] hover:underline">
-          Back to League
+  <section class="mx-auto max-w-[800px] px-6 pb-16 lg:px-12">
+    {season.results_url && (
+      <div class="mb-8">
+        <a
+          href={season.results_url as string}
+          target="_blank"
+          class="inline-block rounded-[10px] border border-teal-border bg-teal/10 px-5 py-2.5 text-sm font-semibold text-teal transition-colors hover:bg-teal/20"
+        >
+          View Full League Results &rarr;
         </a>
-        <div>
-          {nextSeason && (
-            <a href={`/league/${nextSeason.year}`} class="text-sm font-semibold text-teal hover:underline">
-              {nextSeason.year} League &rarr;
-            </a>
-          )}
-        </div>
+      </div>
+    )}
+
+    {renderedWriteup && (
+      <article
+        class="prose prose-base max-w-none
+          prose-headings:font-display prose-headings:text-[#1a1a1a]
+          prose-h3:text-lg prose-h3:mt-10 prose-h3:mb-3 prose-h3:pb-2 prose-h3:border-b prose-h3:border-teal-border/20
+          prose-p:text-prairie prose-p:text-[15px] prose-p:leading-[1.85] prose-p:mb-4
+          prose-a:text-teal prose-a:no-underline hover:prose-a:underline
+          prose-img:rounded-[10px] prose-img:my-6 prose-img:max-w-md prose-img:mx-auto
+          prose-strong:text-[#1a1a1a] prose-strong:font-semibold
+          prose-ol:pl-6 prose-ol:space-y-0.5
+          prose-li:text-prairie prose-li:text-sm"
+        set:html={renderedWriteup}
+      />
+    )}
+
+    <!-- Navigation -->
+    <div class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-teal-border/20 pt-6">
+      <div>
+        {prevSeason && (
+          <a href={`/league/${prevSeason.year}`} class="text-sm font-semibold text-teal hover:underline">
+            &larr; {(prevSeason.year as number)} Season
+          </a>
+        )}
+      </div>
+      <a href="/fishing-league" class="text-sm text-prairie hover:underline">
+        All Seasons
+      </a>
+      <div>
+        {nextSeason && (
+          <a href={`/league/${nextSeason.year}`} class="text-sm font-semibold text-teal hover:underline">
+            {(nextSeason.year as number)} Season &rarr;
+          </a>
+        )}
       </div>
     </div>
   </section>

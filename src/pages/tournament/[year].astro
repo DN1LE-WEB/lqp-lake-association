@@ -3,7 +3,7 @@ export const prerender = false;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { getDB } from '../../lib/db';
-import { marked } from 'marked';
+import { processMarkdown } from '../../lib/process-markdown';
 
 const { year } = Astro.params;
 const yearNum = parseInt(year!, 10);
@@ -22,12 +22,10 @@ if (!tournament) {
   return Astro.redirect('/tournament');
 }
 
-// Fetch photos for this tournament
 const { results: photos } = await db.prepare(
   "SELECT * FROM tournament_photos WHERE tournament_id = ? ORDER BY sort_order"
 ).bind(tournament.id).all();
 
-// Get prev/next years for navigation
 const prevTournament = await db.prepare(
   "SELECT year FROM tournaments WHERE year < ? AND visible = 1 ORDER BY year DESC LIMIT 1"
 ).bind(yearNum).first();
@@ -36,116 +34,89 @@ const nextTournament = await db.prepare(
   "SELECT year FROM tournaments WHERE year > ? AND visible = 1 ORDER BY year ASC LIMIT 1"
 ).bind(yearNum).first();
 
-// Process writeup: fix image URLs, strip nav content, render markdown
-let renderedWriteup = '';
-if (tournament.writeup) {
-  let md = (tournament.writeup as string)
-    // Replace old lqplake.org image URLs with local paths
-    .replace(/http:\/\/www\.lqplake\.org\/uploads\/1\/8\/0\/2\/18024505\//g, '/images/tournaments/')
-    // Strip query params from image URLs (e.g. ?1774895688)
-    .replace(/(\/images\/tournaments\/[^\s)]+)\?\d+/g, '$1');
+const renderedWriteup = await processMarkdown(tournament.writeup as string);
 
-  // Strip nav lines
-  const lines = md.split('\n').filter(line => {
-    const trimmed = line.trim();
-    if (trimmed.startsWith('- [Our Mission]')) return false;
-    if (trimmed.startsWith('- [LQP Fishing League')) return false;
-    if (trimmed.startsWith('- [46th Annual')) return false;
-    if (trimmed.startsWith('- [45th Annual')) return false;
-    if (trimmed.startsWith('- [44th Annual')) return false;
-    if (trimmed.startsWith('- [43rd Annual')) return false;
-    if (trimmed.startsWith('- [42nd Annual')) return false;
-    if (trimmed.startsWith('- [41st Annual')) return false;
-    if (trimmed.startsWith('- [40th Annual')) return false;
-    if (trimmed.startsWith('- [39th Annual')) return false;
-    if (trimmed.startsWith('- [38th Annual')) return false;
-    if (trimmed.startsWith('- [37th Annual')) return false;
-    if (trimmed.startsWith('- [36th Annual')) return false;
-    if (trimmed.startsWith('- [35th Annual')) return false;
-    if (trimmed.startsWith('- [34th Annual')) return false;
-    if (trimmed.startsWith('- [33rd Annual')) return false;
-    return true;
-  });
-  md = lines.join('\n');
-
-  renderedWriteup = await marked.parse(md);
-}
+// Limit photo display - show first 30, mention total if more
+const displayPhotos = (photos as any[]).slice(0, 30);
+const totalPhotos = (photos as any[]).length;
+const hasMorePhotos = totalPhotos > 30;
 ---
 
 <BaseLayout title={tournament.title as string}>
-  <PageHeader title={tournament.title as string} />
+  <PageHeader title={tournament.title as string} subtitle={tournament.date ? new Date((tournament.date as string) + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : undefined} />
 
-  <section class="mx-auto max-w-[1000px] px-6 pb-10 lg:px-12">
-    <div class="rounded-[14px] border border-teal-border/10 bg-white p-8">
-
-      {tournament.date && (
-        <p class="mt-2 text-lg font-semibold text-teal">
-          {new Date((tournament.date as string) + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-        </p>
-      )}
-
-      {renderedWriteup && (
-        <div class="mt-6 prose prose-sm max-w-none text-prairie
-          prose-headings:font-display prose-headings:text-[#1a1a1a]
-          prose-a:text-teal prose-a:underline
-          prose-img:rounded-[10px] prose-img:border prose-img:border-teal-border
-          prose-strong:text-[#1a1a1a]"
-          set:html={renderedWriteup}
-        />
-      )}
-
-      {tournament.results_url && (
-        <div class="mt-6">
-          <a
-            href={tournament.results_url as string}
-            target="_blank"
-            class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white"
-          >
-            View Tournament Results
-          </a>
-        </div>
-      )}
-
-      {(photos as any[]).length > 0 && (
-        <div class="mt-8">
-          <h3 class="font-display text-lg font-bold text-[#1a1a1a] mb-4">Tournament Photos</h3>
-          <div class="columns-2 gap-3.5 sm:columns-3">
-            {(photos as any[]).map((photo: any) => (
-              <div class="mb-3.5 break-inside-avoid overflow-hidden rounded-[10px] border border-teal-border">
-                <img
-                  src={photo.url}
-                  alt={photo.caption || 'Tournament photo'}
-                  class="w-full object-cover transition-transform duration-300 hover:scale-105"
-                  loading="lazy"
-                />
-                {photo.caption && (
-                  <div class="px-2 py-1.5 text-xs text-prairie bg-white">{photo.caption}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <!-- Navigation -->
-      <div class="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-teal-border/10 pt-6">
-        <div>
-          {prevTournament && (
-            <a href={`/tournament/${prevTournament.year}`} class="text-sm font-semibold text-teal hover:underline">
-              &larr; {prevTournament.year} Tournament
-            </a>
-          )}
-        </div>
-        <a href="/tournament" class="text-sm font-semibold text-[#1a1a1a] hover:underline">
-          Back to Tournaments
+  <section class="mx-auto max-w-[800px] px-6 pb-16 lg:px-12">
+    {tournament.results_url && (
+      <div class="mb-8">
+        <a
+          href={tournament.results_url as string}
+          target="_blank"
+          class="inline-block rounded-[10px] border border-teal-border bg-teal/10 px-5 py-2.5 text-sm font-semibold text-teal transition-colors hover:bg-teal/20"
+        >
+          View Tournament Results &rarr;
         </a>
-        <div>
-          {nextTournament && (
-            <a href={`/tournament/${nextTournament.year}`} class="text-sm font-semibold text-teal hover:underline">
-              {nextTournament.year} Tournament &rarr;
-            </a>
-          )}
+      </div>
+    )}
+
+    {renderedWriteup && (
+      <article
+        class="prose prose-base max-w-none
+          prose-headings:font-display prose-headings:text-[#1a1a1a]
+          prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-3
+          prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3 prose-h3:pb-2 prose-h3:border-b prose-h3:border-teal-border/20
+          prose-p:text-prairie prose-p:text-[15px] prose-p:leading-[1.85] prose-p:mb-4
+          prose-a:text-teal prose-a:no-underline hover:prose-a:underline
+          prose-img:rounded-[10px] prose-img:my-6 prose-img:max-w-md prose-img:mx-auto
+          prose-strong:text-[#1a1a1a] prose-strong:font-semibold
+          prose-ol:pl-6 prose-ol:space-y-0.5
+          prose-li:text-prairie prose-li:text-sm"
+        set:html={renderedWriteup}
+      />
+    )}
+
+    {displayPhotos.length > 0 && (
+      <div class="mt-12">
+        <h3 class="font-display text-lg font-bold text-[#1a1a1a] mb-4 pb-2 border-b border-teal-border/20">
+          Tournament Photos {hasMorePhotos && <span class="text-sm font-normal text-prairie">({totalPhotos} total)</span>}
+        </h3>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {displayPhotos.map((photo: any) => (
+            <div class="overflow-hidden rounded-[8px] border border-teal-border/30">
+              <img
+                src={photo.url}
+                alt={photo.caption || 'Tournament photo'}
+                class="aspect-square w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          ))}
         </div>
+        {hasMorePhotos && (
+          <p class="mt-4 text-center text-sm text-prairie">
+            Showing {displayPhotos.length} of {totalPhotos} photos
+          </p>
+        )}
+      </div>
+    )}
+
+    <!-- Navigation -->
+    <div class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-teal-border/20 pt-6">
+      <div>
+        {prevTournament && (
+          <a href={`/tournament/${prevTournament.year}`} class="text-sm font-semibold text-teal hover:underline">
+            &larr; {(prevTournament.year as number)} Tournament
+          </a>
+        )}
+      </div>
+      <a href="/tournament" class="text-sm text-prairie hover:underline">
+        All Tournaments
+      </a>
+      <div>
+        {nextTournament && (
+          <a href={`/tournament/${nextTournament.year}`} class="text-sm font-semibold text-teal hover:underline">
+            {(nextTournament.year as number)} Tournament &rarr;
+          </a>
+        )}
       </div>
     </div>
   </section>

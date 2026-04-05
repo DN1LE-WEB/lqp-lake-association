@@ -30,7 +30,8 @@
       "Bash(xxd \"C:/Users/dn1le/Documents/lqp lake/src/pages/index.astro\")",
       "Bash(xxd)",
       "Bash(mkdir -p public/images/tournaments)",
-      "Bash(python db/generate-seed-content.py)"
+      "Bash(python db/generate-seed-content.py)",
+      "Bash(python db/update-full-content.py)"
     ]
   }
 }
