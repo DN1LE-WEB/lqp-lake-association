@@ -1,12 +1,24 @@
 ---
+export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { getDB } from '../lib/db';
+import { renderContent } from '../lib/render-content';
+
+const db = getDB(Astro);
+const page = await db.prepare("SELECT * FROM pages WHERE slug = 'projects'").first();
+const title = (page?.title as string) || 'Lake Association Projects';
+const html = page?.content ? renderContent(page.content as string) : '';
 ---
 
-<BaseLayout title="Lake Association Projects">
-  <PageHeader title="Lake Association Projects" subtitle="Conservation, infrastructure, and community projects funded by the LQP Lake Association." />
+<BaseLayout title={title}>
+  <PageHeader title={title} subtitle="Conservation, infrastructure, and community projects funded by the LQP Lake Association." />
 
   <section class="mx-auto max-w-[1000px] px-6 pb-10 lg:px-12">
+    {html && (
+      <div class="prose-prairie mb-10" set:html={html} />
+    )}
+
     <div class="grid gap-3.5 sm:grid-cols-2">
       <div class="rounded-[14px] border border-teal-border/30 bg-white p-8">
         <h3 class="font-display text-xl font-bold text-[#1a1a1a]">Walleye Stocking Program</h3>
