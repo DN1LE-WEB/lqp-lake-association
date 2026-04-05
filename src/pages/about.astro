@@ -1,15 +1,20 @@
 ---
+export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { getDB } from '../lib/db';
+import { renderContent } from '../lib/render-content';
+
+const db = getDB(Astro);
+const page = await db.prepare("SELECT * FROM pages WHERE slug = 'about'").first();
+const html = page ? renderContent(page.content as string) : '';
 ---
 
-<BaseLayout title="Our Mission">
-  <PageHeader title="Our Mission" />
+<BaseLayout title={page?.title as string || 'Our Mission'}>
+  <PageHeader title={page?.title as string || 'Our Mission'} />
 
   <section class="mx-auto max-w-[700px] px-6 pb-20 lg:px-12">
-    <div class="prose-prairie">
-      <p>To advocate the need for soil and water conservation in the watershed. To raise public awareness of environmental issues that have an impact on the lake and to generate response to promote the sport and recreational opportunities of the Lac Qui Parle Lake Area.</p>
-    </div>
+    <div class="prose-prairie" set:html={html} />
   </section>
 
 </BaseLayout>

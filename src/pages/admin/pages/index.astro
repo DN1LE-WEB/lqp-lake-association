@@ -1,0 +1,51 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+
+const db = getDB(Astro);
+const { results: pages } = await db.prepare("SELECT slug, title, updated_at FROM pages ORDER BY slug").all();
+---
+
+<AdminLayout title="Pages">
+  <div class="max-w-4xl">
+    <div class="flex items-center justify-between mb-6">
+      <p class="text-gray-600">Manage the content of your site pages.</p>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50">
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Slug</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Last Updated</th>
+            <th class="text-right px-4 py-3 font-semibold text-gray-700">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pages.map((page: any) => (
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3 font-medium text-navy">{page.title}</td>
+              <td class="px-4 py-3 text-gray-500 font-mono text-xs">/{page.slug}</td>
+              <td class="px-4 py-3 text-gray-500">
+                {page.updated_at ? new Date(page.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never'}
+              </td>
+              <td class="px-4 py-3 text-right">
+                <a
+                  href={`/admin/pages/${page.slug}`}
+                  class="inline-flex items-center px-3 py-1.5 bg-teal text-white text-xs font-medium rounded-md hover:opacity-90 transition-opacity"
+                >
+                  Edit
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {pages.length === 0 && (
+        <div class="px-4 py-8 text-center text-gray-400">No pages found.</div>
+      )}
+    </div>
+  </div>
+</AdminLayout>

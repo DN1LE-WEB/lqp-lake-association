@@ -1,0 +1,28 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+import PageEditor from '../../../components/admin/PageEditor';
+
+const { slug } = Astro.params;
+const db = getDB(Astro);
+const page = await db.prepare("SELECT * FROM pages WHERE slug = ?").bind(slug).first();
+
+if (!page) {
+  return Astro.redirect('/admin/pages');
+}
+---
+
+<AdminLayout title={`Edit: ${page.title}`}>
+  <div class="max-w-4xl">
+    <div class="mb-4">
+      <a href="/admin/pages" class="text-sm text-teal hover:underline">&larr; Back to Pages</a>
+    </div>
+    <PageEditor
+      client:only="react"
+      slug={page.slug as string}
+      title={page.title as string}
+      content={page.content as string}
+    />
+  </div>
+</AdminLayout>

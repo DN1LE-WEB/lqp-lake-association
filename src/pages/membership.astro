@@ -1,25 +1,38 @@
 ---
+export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { getDB } from '../lib/db';
+import { renderContent } from '../lib/render-content';
+
+const db = getDB(Astro);
+const page = await db.prepare("SELECT * FROM pages WHERE slug = 'membership'").first();
+const html = page ? renderContent(page.content as string) : '';
 ---
 
-<BaseLayout title="Membership">
-  <PageHeader title="LQPLA Membership" />
+<BaseLayout title={page?.title as string || 'Membership'}>
+  <PageHeader title={page?.title as string || 'LQPLA Membership'} />
 
   <section class="mx-auto max-w-[1000px] px-6 pb-16 lg:px-12">
     <div class="grid items-start gap-16 lg:grid-cols-[1.2fr_1fr]">
       <div>
-        <h2 class="section-heading mb-5">Become a LQP Lake Association Member!</h2>
-        <p class="mb-3.5 text-[15px] leading-[1.85] text-prairie">The Lac Qui Parle Lake Association is a non-profit organization located out of Montevideo, MN that strives for the betterment of Lac Qui Parle Lake. Donations are accepted and greatly appreciated to aid in making Lac Qui Parle Lake a better place for you and future generations to enjoy.</p>
-        <p class="mb-3.5 text-[15px] leading-[1.85] text-prairie">Yearly dues are $10.00.</p>
-        <p class="mb-3.5 text-[15px] leading-[1.85] text-prairie">Contact the LQP Lake Association at:</p>
-        <p class="text-[15px] leading-[1.85] text-prairie font-semibold">P O Box 66 Montevideo, MN 56265 and become a member today!</p>
-        <p class="mt-6 text-[15px] leading-[1.85] text-prairie">Lac Qui Parle Lakes Association Membership Forms can be printed off using the link below.</p>
-        <div class="mt-6">
-          <a href="/downloads/lqp_membership_application_single.pdf" class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white">
-            Download Membership Application (PDF)
-          </a>
-        </div>
+        {html ? (
+          <div class="prose-prairie" set:html={html} />
+        ) : (
+          <div>
+            <h2 class="section-heading mb-5">Become a LQP Lake Association Member!</h2>
+            <p class="mb-3.5 text-[15px] leading-[1.85] text-prairie">The Lac Qui Parle Lake Association is a non-profit organization located out of Montevideo, MN that strives for the betterment of Lac Qui Parle Lake. Donations are accepted and greatly appreciated to aid in making Lac Qui Parle Lake a better place for you and future generations to enjoy.</p>
+            <p class="mb-3.5 text-[15px] leading-[1.85] text-prairie">Yearly dues are $10.00.</p>
+            <p class="mb-3.5 text-[15px] leading-[1.85] text-prairie">Contact the LQP Lake Association at:</p>
+            <p class="text-[15px] leading-[1.85] text-prairie font-semibold">P O Box 66 Montevideo, MN 56265 and become a member today!</p>
+            <p class="mt-6 text-[15px] leading-[1.85] text-prairie">Lac Qui Parle Lakes Association Membership Forms can be printed off using the link below.</p>
+            <div class="mt-6">
+              <a href="/downloads/lqp_membership_application_single.pdf" class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white">
+                Download Membership Application (PDF)
+              </a>
+            </div>
+          </div>
+        )}
       </div>
 
       <div class="mt-3 rounded-[14px] border border-white/[0.06] bg-navy p-9 text-center text-white">
