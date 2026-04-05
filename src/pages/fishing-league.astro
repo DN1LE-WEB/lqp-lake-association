@@ -13,14 +13,22 @@ const current = seasons.length > 0 ? seasons[0] : null;
 const past = seasons.slice(1);
 
 function getPreview(content: string | null): string {
-  if (!content) return '';
+  if (!content || content === '{}' || content === '""') return '';
+  // Try to extract text from JSON wrapper
+  try {
+    const parsed = JSON.parse(content);
+    if (parsed.content) content = parsed.content;
+    else if (typeof parsed === 'string') content = parsed;
+    else return '';
+  } catch {}
   // Strip markdown formatting for preview
   const plain = content
     .replace(/!\[.*?\]\(.*?\)/g, '')  // images
     .replace(/\[([^\]]*)\]\(.*?\)/g, '$1')  // links
-    .replace(/[#*_~`]/g, '')  // formatting chars
+    .replace(/[#*_~`{}]/g, '')  // formatting chars + braces
     .replace(/\n+/g, ' ')  // newlines
     .trim();
+  if (!plain) return '';
   return plain.length > 150 ? plain.substring(0, 150) + '...' : plain;
 }
 ---

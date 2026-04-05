@@ -13,14 +13,20 @@ const featured = tournaments.length > 0 ? tournaments[0] : null;
 const past = tournaments.slice(1);
 
 function getPreview(content: string | null): string {
-  if (!content) return '';
-  // Strip markdown formatting for preview
+  if (!content || content === '{}' || content === '""') return '';
+  try {
+    const parsed = JSON.parse(content);
+    if (parsed.content) content = parsed.content;
+    else if (typeof parsed === 'string') content = parsed;
+    else return '';
+  } catch {}
   const plain = content
-    .replace(/!\[.*?\]\(.*?\)/g, '')  // images
-    .replace(/\[([^\]]*)\]\(.*?\)/g, '$1')  // links
-    .replace(/[#*_~`]/g, '')  // formatting chars
-    .replace(/\n+/g, ' ')  // newlines
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[([^\]]*)\]\(.*?\)/g, '$1')
+    .replace(/[#*_~`{}]/g, '')
+    .replace(/\n+/g, ' ')
     .trim();
+  if (!plain) return '';
   return plain.length > 150 ? plain.substring(0, 150) + '...' : plain;
 }
 ---

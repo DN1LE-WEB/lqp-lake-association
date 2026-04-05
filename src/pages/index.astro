@@ -42,7 +42,7 @@ const stockingSection = sections.find((s: any) => s.slug === 'stocking') as any;
       <section class="mx-auto max-w-[1000px] px-6 py-16 lg:px-12">
         <div class="grid items-start gap-16 lg:grid-cols-[1.1fr_1fr]">
           <div>
-            <img src="/images/original/1392997578.png" alt="Walleye and Waterfowl" class="float-right ml-6 mb-4 w-[180px] rounded-[10px]" />
+            <img src="/images/original/1392997578.png" alt="Walleye and Waterfowl" class="float-left mr-6 mb-4 w-[180px] rounded-[10px]" />
             <div class="section-tag">About the Association</div>
             <h2 class="section-heading mb-5">{welcomeSection.title}</h2>
             <div class="text-[15px] leading-[1.85] text-prairie prose prose-sm max-w-none" set:html={renderContent(welcomeSection.content as string)} />
