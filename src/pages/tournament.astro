@@ -6,19 +6,23 @@ import { getDB } from '../lib/db';
 
 const db = getDB(Astro);
 const { results: tournaments } = await db.prepare(
-  "SELECT * FROM tournaments WHERE visible = 1 ORDER BY year DESC"
+  "SELECT id, title, year, date, writeup, results_url FROM tournaments WHERE visible = 1 ORDER BY year DESC"
 ).all();
 
-// Fetch photos for each tournament
-const tournamentsWithPhotos = await Promise.all(tournaments.map(async (t: any) => {
-  const { results: photos } = await db.prepare(
-    "SELECT * FROM tournament_photos WHERE tournament_id = ? ORDER BY sort_order"
-  ).bind(t.id).all();
-  return { ...t, photos };
-}));
+const featured = tournaments.length > 0 ? tournaments[0] : null;
+const past = tournaments.slice(1);
 
-const featured = tournamentsWithPhotos.length > 0 ? tournamentsWithPhotos[0] : null;
-const past = tournamentsWithPhotos.slice(1);
+function getPreview(writeup: string | null): string {
+  if (!writeup) return '';
+  // Strip markdown formatting for preview
+  const plain = writeup
+    .replace(/!\[.*?\]\(.*?\)/g, '')  // images
+    .replace(/\[([^\]]*)\]\(.*?\)/g, '$1')  // links
+    .replace(/[#*_~`]/g, '')  // formatting chars
+    .replace(/\n+/g, ' ')  // newlines
+    .trim();
+  return plain.length > 150 ? plain.substring(0, 150) + '...' : plain;
+}
 ---
 
 <BaseLayout title="Walleye Tournament">
@@ -26,7 +30,7 @@ const past = tournamentsWithPhotos.slice(1);
 
   <section class="mx-auto max-w-[1000px] px-6 pb-10 lg:px-12">
     {featured ? (
-      <div class="rounded-[14px] border border-teal-border/10 bg-white p-8">
+      <a href={`/tournament/${featured.year}`} class="block rounded-[14px] border border-teal-border/10 bg-white p-8 transition-shadow hover:shadow-lg">
         <div class="section-tag">Upcoming</div>
         <h2 class="font-display text-2xl font-bold text-[#1a1a1a]">{featured.title}</h2>
         {featured.date && (
@@ -34,61 +38,11 @@ const past = tournamentsWithPhotos.slice(1);
             {new Date(featured.date as string + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         )}
-
         {featured.writeup && (
-          <div class="mt-4 text-prairie leading-relaxed" style="white-space: pre-line;">{featured.writeup}</div>
+          <p class="mt-3 text-prairie leading-relaxed">{getPreview(featured.writeup as string)}</p>
         )}
-
-        {featured.results_url && (
-          <div class="mt-6">
-            <a
-              href={featured.results_url as string}
-              target="_blank"
-              class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white"
-            >
-              View Tournament Results
-            </a>
-          </div>
-        )}
-
-        {featured.content && (
-          <div class="mt-6 prose prose-sm max-w-none text-prairie" set:html={featured.content} />
-        )}
-
-        {featured.roster && (
-          <div class="mt-6">
-            <details class="group">
-              <summary class="cursor-pointer font-display text-lg font-bold text-[#1a1a1a] select-none">
-                <span class="group-open:hidden">&#9654;</span>
-                <span class="hidden group-open:inline">&#9660;</span>
-                Tournament Roster
-              </summary>
-              <div class="mt-3 text-prairie leading-relaxed" style="white-space: pre-line;">{featured.roster}</div>
-            </details>
-          </div>
-        )}
-
-        {featured.photos.length > 0 && (
-          <div class="mt-8">
-            <h3 class="font-display text-lg font-bold text-[#1a1a1a] mb-4">Tournament Photos</h3>
-            <div class="columns-2 gap-3.5 sm:columns-3">
-              {featured.photos.map((photo: any) => (
-                <div class="mb-3.5 break-inside-avoid overflow-hidden rounded-[10px] border border-teal-border">
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || 'Tournament photo'}
-                    class="w-full object-cover transition-transform duration-300 hover:scale-105"
-                    loading="lazy"
-                  />
-                  {photo.caption && (
-                    <div class="px-2 py-1.5 text-xs text-prairie bg-white">{photo.caption}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        <span class="mt-4 inline-block text-sm font-semibold text-teal">View details &rarr;</span>
+      </a>
     ) : (
       <div class="rounded-[14px] border border-teal-border/10 bg-white p-8 text-center text-gray-500">
         No upcoming tournament information available.
@@ -101,71 +55,26 @@ const past = tournamentsWithPhotos.slice(1);
       <div class="mx-auto max-w-[1000px]">
         <div class="section-tag">Tournament History</div>
         <h2 class="section-heading mb-8">Past Tournaments</h2>
-        <div class="space-y-6">
+        <div class="space-y-4">
           {past.map((t: any) => (
-            <details class="group rounded-[14px] border border-teal-border/10 bg-white">
-              <summary class="cursor-pointer px-6 py-5 select-none">
-                <span class="font-display text-lg font-bold text-[#1a1a1a]">
-                  {t.title}
-                </span>
-                {t.date && (
-                  <span class="ml-3 text-sm text-prairie">
-                    {new Date(t.date as string + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            <a href={`/tournament/${t.year}`} class="block rounded-[14px] border border-teal-border/10 bg-white px-6 py-5 transition-shadow hover:shadow-lg">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="font-display text-lg font-bold text-[#1a1a1a]">
+                    {t.title}
                   </span>
-                )}
-              </summary>
-              <div class="px-6 pb-6">
-                {t.writeup && (
-                  <div class="text-prairie leading-relaxed mb-4" style="white-space: pre-line;">{t.writeup}</div>
-                )}
-
-                {t.results_url && (
-                  <div class="mb-4">
-                    <a
-                      href={t.results_url as string}
-                      target="_blank"
-                      class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white"
-                    >
-                      View Results
-                    </a>
-                  </div>
-                )}
-
-                {t.content && (
-                  <div class="prose prose-sm max-w-none text-prairie mb-4" set:html={t.content} />
-                )}
-
-                {t.roster && (
-                  <details class="mb-4">
-                    <summary class="cursor-pointer text-sm font-semibold text-teal select-none">
-                      Show Roster
-                    </summary>
-                    <div class="mt-2 text-sm text-prairie leading-relaxed" style="white-space: pre-line;">{t.roster}</div>
-                  </details>
-                )}
-
-                {t.photos.length > 0 && (
-                  <div class="mt-4">
-                    <h4 class="font-display text-base font-bold text-[#1a1a1a] mb-3">Photos</h4>
-                    <div class="columns-2 gap-3.5 sm:columns-3">
-                      {t.photos.map((photo: any) => (
-                        <div class="mb-3.5 break-inside-avoid overflow-hidden rounded-[10px] border border-teal-border">
-                          <img
-                            src={photo.url}
-                            alt={photo.caption || 'Tournament photo'}
-                            class="w-full object-cover transition-transform duration-300 hover:scale-105"
-                            loading="lazy"
-                          />
-                          {photo.caption && (
-                            <div class="px-2 py-1.5 text-xs text-prairie bg-white">{photo.caption}</div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {t.date && (
+                    <span class="ml-3 text-sm text-prairie">
+                      {new Date(t.date as string + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  )}
+                </div>
+                <span class="text-sm font-semibold text-teal">&rarr;</span>
               </div>
-            </details>
+              {t.writeup && (
+                <p class="mt-2 text-sm text-prairie leading-relaxed">{getPreview(t.writeup as string)}</p>
+              )}
+            </a>
           ))}
         </div>
       </div>
