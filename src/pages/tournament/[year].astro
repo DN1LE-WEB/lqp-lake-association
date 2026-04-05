@@ -22,6 +22,10 @@ if (!tournament) {
   return Astro.redirect('/tournament');
 }
 
+const { results: documents } = await db.prepare(
+  "SELECT * FROM tournament_documents WHERE tournament_id = ? ORDER BY sort_order"
+).bind(tournament.id).all();
+
 const { results: photos } = await db.prepare(
   "SELECT * FROM tournament_photos WHERE tournament_id = ? ORDER BY sort_order"
 ).bind(tournament.id).all();
@@ -47,7 +51,7 @@ const hasMorePhotos = totalPhotos > 30;
 
   <section class="mx-auto max-w-[800px] px-6 pb-16 lg:px-12">
     {tournament.results_url && (
-      <div class="mb-8">
+      <div class="mb-4">
         <a
           href={tournament.results_url as string}
           target="_blank"
@@ -55,6 +59,31 @@ const hasMorePhotos = totalPhotos > 30;
         >
           View Tournament Results &rarr;
         </a>
+      </div>
+    )}
+
+    {(documents as any[]).length > 0 && (
+      <div class="mb-8">
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-prairie/70">Documents</h3>
+        <div class="flex flex-wrap gap-2">
+          {(documents as any[]).map((doc: any) => (
+            <a
+              href={doc.url}
+              target="_blank"
+              class="inline-flex items-center gap-2 rounded-lg border border-teal-border/20 bg-white px-4 py-2.5 text-sm font-medium text-[#1a1a1a] shadow-sm transition-all hover:border-teal hover:shadow-md"
+            >
+              {doc.file_type === 'pdf' ? (
+                <svg class="h-4 w-4 shrink-0 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6zm2-5h2v-1H8v-2h3v-1H8v-1h4v5.5a.5.5 0 0 1-.5.5H8v-1zm5-5h2.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5H13v-5z"/></svg>
+              ) : doc.file_type === 'docx' ? (
+                <svg class="h-4 w-4 shrink-0 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/></svg>
+              ) : (
+                <svg class="h-4 w-4 shrink-0 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/></svg>
+              )}
+              <span>{doc.title}</span>
+              <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-500">{doc.file_type}</span>
+            </a>
+          ))}
+        </div>
       </div>
     )}
 

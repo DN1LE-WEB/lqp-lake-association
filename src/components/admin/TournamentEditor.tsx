@@ -9,6 +9,15 @@ interface Photo {
   sort_order: number;
 }
 
+interface Document {
+  id: number;
+  tournament_id: number;
+  title: string;
+  url: string;
+  file_type: string;
+  sort_order: number;
+}
+
 interface Props {
   id: string;
   title: string;
@@ -33,9 +42,22 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
   const [currentResultsUrl, setCurrentResultsUrl] = useState(results_url);
   const [currentRoster, setCurrentRoster] = useState(roster);
   const [photos, setPhotos] = useState<Photo[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showAddDoc, setShowAddDoc] = useState(false);
+  const [newDocTitle, setNewDocTitle] = useState('');
+  const [newDocUrl, setNewDocUrl] = useState('');
+  const [newDocFileType, setNewDocFileType] = useState('pdf');
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+
+  const fetchDocuments = () => {
+    fetch(`/api/tournament-documents/${id}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setDocuments(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  };
 
   useEffect(() => {
     if (!isNew) {
@@ -43,8 +65,76 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
         .then(r => r.ok ? r.json() : [])
         .then(data => setPhotos(Array.isArray(data) ? data : []))
         .catch(() => {});
+      fetchDocuments();
     }
   }, [id, isNew]);
+
+  const handleAddDocument = async () => {
+    if (!newDocTitle.trim() || !newDocUrl.trim()) {
+      alert('Title and URL are required.');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/tournament-documents/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newDocTitle, url: newDocUrl, file_type: newDocFileType }),
+      });
+      if (res.ok) {
+        setNewDocTitle('');
+        setNewDocUrl('');
+        setNewDocFileType('pdf');
+        setShowAddDoc(false);
+        fetchDocuments();
+      } else {
+        alert('Failed to add document.');
+      }
+    } catch {
+      alert('Failed to add document.');
+    }
+  };
+
+  const handleDeleteDocument = async (docId: number) => {
+    if (!confirm('Delete this document?')) return;
+    try {
+      const res = await fetch(`/api/tournament-documents/${id}?docId=${docId}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchDocuments();
+      } else {
+        alert('Failed to delete document.');
+      }
+    } catch {
+      alert('Failed to delete document.');
+    }
+  };
+
+  const handleDocFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        setNewDocUrl(data.url);
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        if (ext === 'pdf' || ext === 'docx' || ext === 'xlsx') {
+          setNewDocFileType(ext);
+        }
+        if (!newDocTitle) {
+          setNewDocTitle(file.name.replace(/\.[^.]+$/, ''));
+        }
+      } else {
+        alert('Upload failed.');
+      }
+    } catch {
+      alert('Upload failed.');
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!currentTitle.trim()) {
@@ -263,6 +353,72 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
           }}
         />
       </div>
+
+      {/* Documents section */}
+      {!isNew && (
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Tournament Documents</label>
+          {documents.length > 0 ? (
+            <div style={{ marginBottom: 12 }}>
+              {documents.map((doc) => (
+                <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: 6, background: '#fafafa' }}>
+                  <span style={{ background: doc.file_type === 'pdf' ? '#fef2f2' : doc.file_type === 'docx' ? '#eff6ff' : '#f0fdf4', color: doc.file_type === 'pdf' ? '#dc2626' : doc.file_type === 'docx' ? '#2563eb' : '#16a34a', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase' as const }}>{doc.file_type}</span>
+                  <span style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>{doc.title}</span>
+                  <a href={doc.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: '#3D7A68', textDecoration: 'none' }}>View</a>
+                  <button
+                    onClick={() => handleDeleteDocument(doc.id)}
+                    style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 13, fontWeight: 600, padding: '2px 6px' }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 12 }}>No documents yet.</p>
+          )}
+
+          {showAddDoc ? (
+            <div style={{ border: '1px solid #d1d5db', borderRadius: 8, padding: 16, marginBottom: 8, background: '#fff' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, marginBottom: 12 }}>
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: 4 }}>Title</label>
+                  <input type="text" value={newDocTitle} onChange={(e) => setNewDocTitle(e.target.value)} placeholder="e.g. Tournament Rules" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: 4 }}>Type</label>
+                  <select value={newDocFileType} onChange={(e) => setNewDocFileType(e.target.value)} style={{ ...inputStyle, width: 100 }}>
+                    <option value="pdf">PDF</option>
+                    <option value="docx">DOCX</option>
+                    <option value="xlsx">XLSX</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ ...labelStyle, marginBottom: 4 }}>URL</label>
+                <input type="text" value={newDocUrl} onChange={(e) => setNewDocUrl(e.target.value)} placeholder="https://... or upload a file below" style={inputStyle} />
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ ...labelStyle, marginBottom: 4 }}>Or upload a file</label>
+                <input type="file" accept=".pdf,.docx,.xlsx,.doc,.xls" onChange={handleDocFileUpload} disabled={uploadingDoc} style={{ fontSize: 13 }} />
+                {uploadingDoc && <span style={{ fontSize: 12, color: '#6b7280', marginLeft: 8 }}>Uploading...</span>}
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={handleAddDocument} style={{ background: '#3D7A68', color: 'white', padding: '8px 16px', border: 'none', borderRadius: 6, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                  Add Document
+                </button>
+                <button onClick={() => { setShowAddDoc(false); setNewDocTitle(''); setNewDocUrl(''); setNewDocFileType('pdf'); }} style={{ background: '#f3f4f6', color: '#374151', padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: 6, fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setShowAddDoc(true)} style={{ background: '#f3f4f6', color: '#374151', padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: 6, fontWeight: 500, fontSize: 13, cursor: 'pointer' }}>
+              + Add Document
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Photos section */}
       {!isNew && (
