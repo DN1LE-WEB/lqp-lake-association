@@ -35,13 +35,14 @@ export const PUT: APIRoute = async (context) => {
   const body = await context.request.json();
 
   await db.prepare(
-    "UPDATE fishing_league SET title = ?, year = ?, results_url = ?, content = ?, visible = ? WHERE id = ?"
+    "UPDATE fishing_league SET title = ?, year = ?, results_url = ?, content = ?, visible = ?, writeup = ? WHERE id = ?"
   ).bind(
     body.title,
     body.year,
     body.results_url || null,
     body.content || '',
     body.visible ? 1 : 0,
+    body.writeup || null,
     id,
   ).run();
 

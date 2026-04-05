@@ -29,8 +29,11 @@ if (!isNew) {
       year={isNew ? new Date().getFullYear() : (tournament.year as number)}
       annual_number={isNew ? '' : (tournament.annual_number as string || '')}
       date={isNew ? '' : (tournament.date as string || '')}
-      content={isNew ? '' : (tournament.content as string)}
+      content={isNew ? '' : (tournament.content as string || '')}
       visible={isNew ? true : Boolean(tournament.visible)}
+      results_url={isNew ? '' : (tournament.results_url as string || '')}
+      roster={isNew ? '' : (tournament.roster as string || '')}
+      writeup={isNew ? '' : (tournament.writeup as string || '')}
     />
   </div>
 </AdminLayout>

@@ -22,8 +22,8 @@ const past = seasons.slice(1);
         <div class="section-tag">Current Season</div>
         <h2 class="font-display text-2xl font-bold text-[#1a1a1a]">{current.title}</h2>
 
-        {current.content && (
-          <div class="mt-4 prose prose-sm max-w-none text-prairie" set:html={current.content} />
+        {current.writeup && (
+          <div class="mt-4 text-prairie leading-relaxed" style="white-space: pre-line;">{current.writeup}</div>
         )}
 
         {current.results_url && (
@@ -36,6 +36,10 @@ const past = seasons.slice(1);
               {current.title} Results
             </a>
           </div>
+        )}
+
+        {current.content && (
+          <div class="mt-6 prose prose-sm max-w-none text-prairie" set:html={current.content} />
         )}
       </div>
     ) : (
@@ -50,11 +54,34 @@ const past = seasons.slice(1);
       <div class="mx-auto max-w-[1000px]">
         <div class="section-tag">Past Seasons</div>
         <h2 class="section-heading mb-8">League History</h2>
-        <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div class="space-y-4">
           {past.map((s: any) => (
-            <div class="rounded-[10px] border border-teal-border/10 bg-white px-5 py-4">
-              <span class="font-display text-[15px] font-bold text-[#1a1a1a]">{s.title}</span>
-            </div>
+            <details class="group rounded-[14px] border border-teal-border/10 bg-white">
+              <summary class="cursor-pointer px-6 py-4 select-none">
+                <span class="font-display text-lg font-bold text-[#1a1a1a]">{s.title}</span>
+              </summary>
+              <div class="px-6 pb-6">
+                {s.writeup && (
+                  <div class="text-prairie leading-relaxed mb-4" style="white-space: pre-line;">{s.writeup}</div>
+                )}
+
+                {s.results_url && (
+                  <div class="mb-4">
+                    <a
+                      href={s.results_url as string}
+                      target="_blank"
+                      class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white"
+                    >
+                      View Results
+                    </a>
+                  </div>
+                )}
+
+                {s.content && (
+                  <div class="prose prose-sm max-w-none text-prairie" set:html={s.content} />
+                )}
+              </div>
+            </details>
           ))}
         </div>
       </div>

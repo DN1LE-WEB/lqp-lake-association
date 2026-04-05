@@ -1,5 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Editor from './Editor';
+
+interface Photo {
+  id: number;
+  tournament_id: number;
+  url: string;
+  caption: string;
+  sort_order: number;
+}
 
 interface Props {
   id: string;
@@ -9,9 +17,12 @@ interface Props {
   date: string;
   content: string;
   visible: boolean;
+  results_url: string;
+  roster: string;
+  writeup: string;
 }
 
-export default function TournamentEditor({ id, title, year, annual_number, date, content, visible }: Props) {
+export default function TournamentEditor({ id, title, year, annual_number, date, content, visible, results_url, roster, writeup }: Props) {
   const isNew = id === 'new';
 
   const [currentTitle, setCurrentTitle] = useState(title);
@@ -20,9 +31,22 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
   const [currentDate, setCurrentDate] = useState(date);
   const [currentContent, setCurrentContent] = useState(content);
   const [currentVisible, setCurrentVisible] = useState(visible);
+  const [currentResultsUrl, setCurrentResultsUrl] = useState(results_url);
+  const [currentRoster, setCurrentRoster] = useState(roster);
+  const [currentWriteup, setCurrentWriteup] = useState(writeup);
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!isNew) {
+      fetch(`/api/tournament-photos/${id}`)
+        .then(r => r.ok ? r.json() : [])
+        .then(data => setPhotos(Array.isArray(data) ? data : []))
+        .catch(() => {});
+    }
+  }, [id, isNew]);
 
   const handleSave = async () => {
     if (!currentTitle.trim()) {
@@ -38,6 +62,9 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
         date: currentDate || null,
         content: currentContent,
         visible: currentVisible,
+        results_url: currentResultsUrl || null,
+        roster: currentRoster || null,
+        writeup: currentWriteup || null,
       };
 
       let res: Response;
@@ -88,6 +115,22 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
     } finally {
       setDeleting(false);
     }
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '8px 12px',
+    border: '1px solid #d1d5db',
+    borderRadius: 8,
+    fontSize: 14,
+    outline: 'none',
+  };
+
+  const labelStyle = {
+    display: 'block' as const,
+    fontSize: 14,
+    fontWeight: 600,
+    marginBottom: 6,
   };
 
   return (
@@ -167,58 +210,112 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
       {/* Fields */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 20 }}>
         <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Year</label>
+          <label style={labelStyle}>Year</label>
           <input
             type="number"
             value={currentYear}
             onChange={(e) => setCurrentYear(Number(e.target.value))}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: 8,
-              fontSize: 14,
-              outline: 'none',
-            }}
+            style={inputStyle}
           />
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Annual Number</label>
+          <label style={labelStyle}>Annual Number</label>
           <input
             type="text"
             value={currentAnnualNumber}
             onChange={(e) => setCurrentAnnualNumber(e.target.value)}
             placeholder='e.g. "46th"'
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: 8,
-              fontSize: 14,
-              outline: 'none',
-            }}
+            style={inputStyle}
           />
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Date</label>
+          <label style={labelStyle}>Date</label>
           <input
             type="date"
             value={currentDate}
             onChange={(e) => setCurrentDate(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: 8,
-              fontSize: 14,
-              outline: 'none',
-            }}
+            style={inputStyle}
           />
         </div>
       </div>
 
-      {/* Content editor */}
-      <Editor content={currentContent} onChange={setCurrentContent} placeholder="Tournament details, results, download links..." />
+      {/* Results URL */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Results URL</label>
+        <input
+          type="text"
+          value={currentResultsUrl}
+          onChange={(e) => setCurrentResultsUrl(e.target.value)}
+          placeholder="https://docs.google.com/spreadsheets/..."
+          style={inputStyle}
+        />
+      </div>
+
+      {/* Writeup */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Writeup (plain text)</label>
+        <textarea
+          value={currentWriteup}
+          onChange={(e) => setCurrentWriteup(e.target.value)}
+          placeholder="Tournament recap or description..."
+          rows={6}
+          style={{
+            ...inputStyle,
+            resize: 'vertical' as const,
+            fontFamily: 'inherit',
+          }}
+        />
+      </div>
+
+      {/* Roster */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Roster (plain text, one entry per line)</label>
+        <textarea
+          value={currentRoster}
+          onChange={(e) => setCurrentRoster(e.target.value)}
+          placeholder="Team 1 - Name & Name&#10;Team 2 - Name & Name&#10;..."
+          rows={8}
+          style={{
+            ...inputStyle,
+            resize: 'vertical' as const,
+            fontFamily: 'inherit',
+          }}
+        />
+      </div>
+
+      {/* Photos section */}
+      {!isNew && (
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Tournament Photos</label>
+          {photos.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12, marginBottom: 12 }}>
+              {photos.map((photo) => (
+                <div key={photo.id} style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #d1d5db' }}>
+                  <img
+                    src={photo.url}
+                    alt={photo.caption || 'Tournament photo'}
+                    style={{ width: '100%', height: 120, objectFit: 'cover' }}
+                  />
+                  {photo.caption && (
+                    <div style={{ padding: '4px 8px', fontSize: 12, color: '#6b7280' }}>{photo.caption}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 12 }}>No photos yet.</p>
+          )}
+          <p style={{ fontSize: 12, color: '#6b7280' }}>
+            Photos are managed via the database. Place image files in <code>public/images/tournaments/</code> and add records to the <code>tournament_photos</code> table.
+          </p>
+        </div>
+      )}
+
+      {/* Content editor (rich text) */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Rich Content (optional)</label>
+        <Editor content={currentContent} onChange={setCurrentContent} placeholder="Tournament details, results, download links..." />
+      </div>
     </div>
   );
 }

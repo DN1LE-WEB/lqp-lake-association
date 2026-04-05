@@ -8,9 +8,10 @@ interface Props {
   results_url: string;
   content: string;
   visible: boolean;
+  writeup: string;
 }
 
-export default function LeagueEditor({ id, title, year, results_url, content, visible }: Props) {
+export default function LeagueEditor({ id, title, year, results_url, content, visible, writeup }: Props) {
   const isNew = id === 'new';
 
   const [currentTitle, setCurrentTitle] = useState(title);
@@ -18,6 +19,7 @@ export default function LeagueEditor({ id, title, year, results_url, content, vi
   const [currentResultsUrl, setCurrentResultsUrl] = useState(results_url);
   const [currentContent, setCurrentContent] = useState(content);
   const [currentVisible, setCurrentVisible] = useState(visible);
+  const [currentWriteup, setCurrentWriteup] = useState(writeup);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -35,6 +37,7 @@ export default function LeagueEditor({ id, title, year, results_url, content, vi
         results_url: currentResultsUrl || null,
         content: currentContent,
         visible: currentVisible,
+        writeup: currentWriteup || null,
       };
 
       let res: Response;
@@ -85,6 +88,22 @@ export default function LeagueEditor({ id, title, year, results_url, content, vi
     } finally {
       setDeleting(false);
     }
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '8px 12px',
+    border: '1px solid #d1d5db',
+    borderRadius: 8,
+    fontSize: 14,
+    outline: 'none',
+  };
+
+  const labelStyle = {
+    display: 'block' as const,
+    fontSize: 14,
+    fontWeight: 600,
+    marginBottom: 6,
   };
 
   return (
@@ -164,42 +183,47 @@ export default function LeagueEditor({ id, title, year, results_url, content, vi
       {/* Fields */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
         <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Year</label>
+          <label style={labelStyle}>Year</label>
           <input
             type="number"
             value={currentYear}
             onChange={(e) => setCurrentYear(Number(e.target.value))}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: 8,
-              fontSize: 14,
-              outline: 'none',
-            }}
+            style={inputStyle}
           />
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Results URL</label>
+          <label style={labelStyle}>Results URL</label>
           <input
             type="text"
             value={currentResultsUrl}
             onChange={(e) => setCurrentResultsUrl(e.target.value)}
             placeholder="https://docs.google.com/spreadsheets/..."
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: 8,
-              fontSize: 14,
-              outline: 'none',
-            }}
+            style={inputStyle}
           />
         </div>
       </div>
 
-      {/* Content editor */}
-      <Editor content={currentContent} onChange={setCurrentContent} placeholder="Season details, weekly results, etc..." />
+      {/* Writeup */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Writeup (plain text)</label>
+        <textarea
+          value={currentWriteup}
+          onChange={(e) => setCurrentWriteup(e.target.value)}
+          placeholder="Season recap or description..."
+          rows={6}
+          style={{
+            ...inputStyle,
+            resize: 'vertical' as const,
+            fontFamily: 'inherit',
+          }}
+        />
+      </div>
+
+      {/* Content editor (rich text) */}
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Rich Content (optional - weekly results, etc.)</label>
+        <Editor content={currentContent} onChange={setCurrentContent} placeholder="Season details, weekly results, etc..." />
+      </div>
     </div>
   );
 }

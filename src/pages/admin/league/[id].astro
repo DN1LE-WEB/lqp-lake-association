@@ -28,8 +28,9 @@ if (!isNew) {
       title={isNew ? '' : (season.title as string)}
       year={isNew ? new Date().getFullYear() : (season.year as number)}
       results_url={isNew ? '' : (season.results_url as string || '')}
-      content={isNew ? '' : (season.content as string)}
+      content={isNew ? '' : (season.content as string || '')}
       visible={isNew ? true : Boolean(season.visible)}
+      writeup={isNew ? '' : (season.writeup as string || '')}
     />
   </div>
 </AdminLayout>
