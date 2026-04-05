@@ -1,5 +1,13 @@
 ---
+export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getDB } from '../lib/db';
+import { renderContent } from '../lib/render-content';
+
+const db = getDB(Astro);
+const { results: newsItems } = await db.prepare(
+  "SELECT * FROM news WHERE visible = 1 ORDER BY sort_order, created_at DESC"
+).all();
 ---
 
 <BaseLayout title="Home">
@@ -45,21 +53,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="mx-auto max-w-[1000px] px-6 py-16 lg:px-12">
     <div class="section-tag mb-6">Recent News</div>
 
-    <div class="mb-4 grid items-center gap-7 rounded-[14px] border border-teal-border bg-white p-8 sm:grid-cols-[200px_1fr]">
-      <img src="/images/original/lac-qui-parle-lake-walleye-tournament-2.png" alt="LQP Walleye Tournament" class="h-[150px] w-full rounded-[10px] object-cover" />
-      <div>
-        <h3 class="mb-2 font-display text-lg font-bold">Lake Association Donation</h3>
-        <p class="text-sm leading-[1.75] text-prairie">Lake Association recently donated $12,000 to Tri-County Let's Go Fishing.</p>
-      </div>
-    </div>
+    {newsItems.length === 0 && (
+      <p class="text-sm text-prairie">No news at this time.</p>
+    )}
 
-    <div class="grid items-center gap-7 rounded-[14px] border border-teal-border bg-white p-8 sm:grid-cols-[200px_1fr]">
-      <img src="/images/original/3320413067264908347_orig.jpg" alt="Fall Walleye Stocking" class="h-[150px] w-full rounded-[10px] object-cover" />
-      <div>
-        <h3 class="mb-2 font-display text-lg font-bold">Fall 2015 Lac Qui Parle Lake Walleye Stocking!</h3>
-        <p class="text-sm leading-[1.75] text-prairie">Stocking of young of the year walleyes on Lac Qui Parle Lake this Fall. Fish measured 7-9" in length. Bottom left pectoral fin is clipped. Please continue to watch for these fin clipped fish in the years to come. LQP Lake Association has a goal to stock 25,000 walleyes. To become a member of the LQP Lake Association go to <a href="/membership" class="text-teal font-medium">www.lqplake.org</a> and download a membership form.</p>
+    {newsItems.map((item: any, idx: number) => (
+      <div class:list={[
+        "grid items-center gap-7 rounded-[14px] border border-teal-border bg-white p-8",
+        item.image_url ? "sm:grid-cols-[200px_1fr]" : "",
+        idx < newsItems.length - 1 ? "mb-4" : "",
+      ]}>
+        {item.image_url && (
+          <img src={item.image_url} alt={item.title} class="h-[150px] w-full rounded-[10px] object-cover" />
+        )}
+        <div>
+          <h3 class="mb-2 font-display text-lg font-bold">{item.title}</h3>
+          <div class="text-sm leading-[1.75] text-prairie prose prose-sm max-w-none" set:html={renderContent(item.content as string)} />
+        </div>
       </div>
-    </div>
+    ))}
   </section>
 
   <hr class="mx-auto max-w-[1000px] border-teal-border" />

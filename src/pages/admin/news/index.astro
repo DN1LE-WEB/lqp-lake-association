@@ -1,0 +1,89 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+
+const db = getDB(Astro);
+const { results: newsItems } = await db.prepare(
+  "SELECT * FROM news ORDER BY sort_order, created_at DESC"
+).all();
+---
+
+<AdminLayout title="News">
+  <div class="max-w-4xl">
+    <div class="flex items-center justify-between mb-6">
+      <p class="text-gray-600">Manage news and announcements.</p>
+      <a
+        href="/admin/news/new"
+        class="inline-flex items-center px-4 py-2 bg-teal text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+      >
+        + Add News
+      </a>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50">
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Image</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Updated</th>
+            <th class="text-right px-4 py-3 font-semibold text-gray-700">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {newsItems.map((item: any) => (
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3">
+                {item.image_url ? (
+                  <img
+                    src={item.image_url}
+                    alt=""
+                    class="w-12 h-12 rounded object-cover"
+                  />
+                ) : (
+                  <div class="w-12 h-12 rounded bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                    No img
+                  </div>
+                )}
+              </td>
+              <td class="px-4 py-3 font-medium text-navy">{item.title}</td>
+              <td class="px-4 py-3">
+                {item.visible ? (
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Visible
+                  </span>
+                ) : (
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    Hidden
+                  </span>
+                )}
+              </td>
+              <td class="px-4 py-3 text-gray-500">
+                {item.updated_at
+                  ? new Date(item.updated_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                  : 'Never'}
+              </td>
+              <td class="px-4 py-3 text-right">
+                <a
+                  href={`/admin/news/${item.id}`}
+                  class="inline-flex items-center px-3 py-1.5 bg-teal text-white text-xs font-medium rounded-md hover:opacity-90 transition-opacity"
+                >
+                  Edit
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {newsItems.length === 0 && (
+        <div class="px-4 py-8 text-center text-gray-400">No news items found. Click "Add News" to create one.</div>
+      )}
+    </div>
+  </div>
+</AdminLayout>
