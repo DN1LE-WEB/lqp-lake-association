@@ -26,7 +26,9 @@
       "Bash(python screenshot.py)",
       "Bash(python grab_original.py)",
       "Bash(python upscale.py)",
-      "Bash(python upscale2.py)"
+      "Bash(python upscale2.py)",
+      "Bash(xxd \"C:/Users/dn1le/Documents/lqp lake/src/pages/index.astro\")",
+      "Bash(xxd)"
     ]
   }
 }
