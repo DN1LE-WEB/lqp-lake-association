@@ -42,13 +42,17 @@ const photosResult = await db.prepare(
 ).bind(season.id).all();
 const photos = photosResult.results || [];
 
-// Process week content through markdown
-const processedWeeks = await Promise.all(
+// Process week content through markdown - only keep weeks with actual content
+const allWeeks = await Promise.all(
   weeks.map(async (w: any) => ({
     ...w,
     renderedContent: await processMarkdown(w.content || ''),
   }))
 );
+const processedWeeks = allWeeks.filter((w: any) => w.content && w.content.trim().length > 10);
+
+// Check if structured weeks have meaningful content
+const hasStructuredWeeks = processedWeeks.length >= 3;
 
 // Process end of year results
 const renderedEndOfYear = await processMarkdown((season.end_of_year_results as string) || '');
@@ -56,7 +60,7 @@ const renderedEndOfYear = await processMarkdown((season.end_of_year_results as s
 // Process roster
 const renderedRoster = await processMarkdown((season.roster as string) || '');
 
-// Legacy content fallback (for seasons that still use the content field)
+// Full content field - used as fallback when structured weeks are mostly empty
 const renderedContent = await processMarkdown((season.content as string) || '');
 
 // General gallery photos (not tied to a week)
@@ -81,8 +85,8 @@ const showGallery = Boolean(season.show_gallery) && galleryPhotos.length > 0;
       </div>
     )}
 
-    {/* Weekly Results */}
-    {processedWeeks.length > 0 && (
+    {/* Weekly Results - only show if we have meaningful structured content */}
+    {hasStructuredWeeks && (
       <div class="mb-12">
         {processedWeeks.map((week: any) => (
           <div class="mb-8 pb-8 border-b border-teal-border/20 last:border-b-0">
@@ -122,8 +126,8 @@ const showGallery = Boolean(season.show_gallery) && galleryPhotos.length > 0;
       </div>
     )}
 
-    {/* Legacy content fallback for seasons without structured weeks */}
-    {processedWeeks.length === 0 && renderedContent && (
+    {/* Full content fallback when structured weeks are empty/incomplete */}
+    {!hasStructuredWeeks && renderedContent && (
       <article
         class="prose prose-base max-w-none mb-12
           prose-headings:font-display prose-headings:text-[#1a1a1a]
