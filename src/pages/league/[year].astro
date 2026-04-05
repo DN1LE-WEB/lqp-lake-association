@@ -30,13 +30,45 @@ const nextSeason = await db.prepare(
   "SELECT year FROM fishing_league WHERE year > ? AND visible = 1 ORDER BY year ASC LIMIT 1"
 ).bind(yearNum).first();
 
-const renderedContent = await processMarkdown(season.content as string);
+// Load structured weeks
+const weeksResult = await db.prepare(
+  "SELECT * FROM league_weeks WHERE league_id = ? ORDER BY week_number ASC"
+).bind(season.id).all();
+const weeks = weeksResult.results || [];
+
+// Load photos
+const photosResult = await db.prepare(
+  "SELECT * FROM league_photos WHERE league_id = ? ORDER BY sort_order ASC"
+).bind(season.id).all();
+const photos = photosResult.results || [];
+
+// Process week content through markdown
+const processedWeeks = await Promise.all(
+  weeks.map(async (w: any) => ({
+    ...w,
+    renderedContent: await processMarkdown(w.content || ''),
+  }))
+);
+
+// Process end of year results
+const renderedEndOfYear = await processMarkdown((season.end_of_year_results as string) || '');
+
+// Process roster
+const renderedRoster = await processMarkdown((season.roster as string) || '');
+
+// Legacy content fallback (for seasons that still use the content field)
+const renderedContent = await processMarkdown((season.content as string) || '');
+
+// General gallery photos (not tied to a week)
+const galleryPhotos = photos.filter((p: any) => p.week_id === null);
+const showGallery = Boolean(season.show_gallery) && galleryPhotos.length > 0;
 ---
 
 <BaseLayout title={season.title as string}>
   <PageHeader title={season.title as string} />
 
   <section class="mx-auto max-w-[800px] px-6 pb-16 lg:px-12">
+    {/* Results URL link */}
     {season.results_url && (
       <div class="mb-8">
         <a
@@ -49,9 +81,51 @@ const renderedContent = await processMarkdown(season.content as string);
       </div>
     )}
 
-    {renderedContent && (
+    {/* Weekly Results */}
+    {processedWeeks.length > 0 && (
+      <div class="mb-12">
+        {processedWeeks.map((week: any) => (
+          <div class="mb-8 pb-8 border-b border-teal-border/20 last:border-b-0">
+            <h3 class="font-display text-lg font-bold text-[#1a1a1a] mb-1">
+              {week.title}
+            </h3>
+            {week.date && (
+              <p class="text-sm text-prairie/60 mb-4">{week.date}</p>
+            )}
+            {week.renderedContent && (
+              <article
+                class="prose prose-base max-w-none
+                  prose-p:text-prairie prose-p:text-[15px] prose-p:leading-[1.85] prose-p:mb-4
+                  prose-a:text-teal prose-a:no-underline hover:prose-a:underline
+                  prose-img:rounded-[10px] prose-img:my-4 prose-img:max-w-md prose-img:mx-auto
+                  prose-strong:text-[#1a1a1a] prose-strong:font-semibold
+                  prose-ol:pl-6 prose-ol:space-y-0.5
+                  prose-li:text-prairie prose-li:text-sm"
+                set:html={week.renderedContent}
+              />
+            )}
+            {/* Week photos */}
+            {photos.filter((p: any) => p.week_id === week.id).length > 0 && (
+              <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {photos.filter((p: any) => p.week_id === week.id).map((photo: any) => (
+                  <img
+                    src={photo.url}
+                    alt={photo.caption || ''}
+                    class="rounded-lg w-full h-40 object-cover"
+                    loading="lazy"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+
+    {/* Legacy content fallback for seasons without structured weeks */}
+    {processedWeeks.length === 0 && renderedContent && (
       <article
-        class="prose prose-base max-w-none
+        class="prose prose-base max-w-none mb-12
           prose-headings:font-display prose-headings:text-[#1a1a1a]
           prose-h3:text-lg prose-h3:mt-10 prose-h3:mb-3 prose-h3:pb-2 prose-h3:border-b prose-h3:border-teal-border/20
           prose-p:text-prairie prose-p:text-[15px] prose-p:leading-[1.85] prose-p:mb-4
@@ -64,7 +138,65 @@ const renderedContent = await processMarkdown(season.content as string);
       />
     )}
 
-    <!-- Navigation -->
+    {/* End of Year Results */}
+    {renderedEndOfYear && (
+      <div class="mb-12">
+        <h2 class="font-display text-xl font-bold text-[#1a1a1a] mb-4 pb-2 border-b border-teal-border/20">
+          End of Year Results
+        </h2>
+        <article
+          class="prose prose-base max-w-none
+            prose-p:text-prairie prose-p:text-[15px] prose-p:leading-[1.85] prose-p:mb-4
+            prose-a:text-teal prose-a:no-underline hover:prose-a:underline
+            prose-strong:text-[#1a1a1a] prose-strong:font-semibold
+            prose-ol:pl-6 prose-ol:space-y-0.5
+            prose-li:text-prairie prose-li:text-sm"
+          set:html={renderedEndOfYear}
+        />
+      </div>
+    )}
+
+    {/* Roster (collapsible) */}
+    {renderedRoster && (
+      <details class="mb-12 group">
+        <summary class="font-display text-xl font-bold text-[#1a1a1a] cursor-pointer pb-2 border-b border-teal-border/20 list-none flex items-center justify-between">
+          <span>Roster</span>
+          <svg class="w-5 h-5 text-prairie/40 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <article
+          class="mt-4 prose prose-base max-w-none
+            prose-p:text-prairie prose-p:text-[15px] prose-p:leading-[1.85] prose-p:mb-4
+            prose-ol:pl-6 prose-ol:space-y-0.5
+            prose-li:text-prairie prose-li:text-sm"
+          set:html={renderedRoster}
+        />
+      </details>
+    )}
+
+    {/* Photo Gallery */}
+    {showGallery && (
+      <div class="mb-12">
+        <h2 class="font-display text-xl font-bold text-[#1a1a1a] mb-4 pb-2 border-b border-teal-border/20">
+          Photo Gallery
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {galleryPhotos.map((photo: any) => (
+            <a href={photo.url} target="_blank" class="block overflow-hidden rounded-lg">
+              <img
+                src={photo.url}
+                alt={photo.caption || ''}
+                class="w-full h-48 object-cover transition-transform hover:scale-105"
+                loading="lazy"
+              />
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* Navigation */}
     <div class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-teal-border/20 pt-6">
       <div>
         {prevSeason && (

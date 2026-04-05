@@ -8,12 +8,24 @@ const { id } = Astro.params;
 const isNew = id === 'new';
 
 let season: any = null;
+let weeks: any[] = [];
+let photos: any[] = [];
+
 if (!isNew) {
   const db = getDB(Astro);
   season = await db.prepare("SELECT * FROM fishing_league WHERE id = ?").bind(id).first();
   if (!season) {
     return Astro.redirect('/admin/league');
   }
+  const weeksResult = await db.prepare(
+    "SELECT * FROM league_weeks WHERE league_id = ? ORDER BY week_number ASC"
+  ).bind(id).all();
+  weeks = weeksResult.results || [];
+
+  const photosResult = await db.prepare(
+    "SELECT * FROM league_photos WHERE league_id = ? ORDER BY sort_order ASC"
+  ).bind(id).all();
+  photos = photosResult.results || [];
 }
 ---
 
@@ -30,6 +42,11 @@ if (!isNew) {
       results_url={isNew ? '' : (season.results_url as string || '')}
       content={isNew ? '' : (season.content as string || '')}
       visible={isNew ? true : Boolean(season.visible)}
+      roster={isNew ? '' : (season.roster as string || '')}
+      show_gallery={isNew ? false : Boolean(season.show_gallery)}
+      end_of_year_results={isNew ? '' : (season.end_of_year_results as string || '')}
+      weeks={isNew ? [] : weeks}
+      photos={isNew ? [] : photos}
     />
   </div>
 </AdminLayout>
