@@ -28,7 +28,9 @@
       "Bash(python upscale.py)",
       "Bash(python upscale2.py)",
       "Bash(xxd \"C:/Users/dn1le/Documents/lqp lake/src/pages/index.astro\")",
-      "Bash(xxd)"
+      "Bash(xxd)",
+      "Bash(mkdir -p public/images/tournaments)",
+      "Bash(python db/generate-seed-content.py)"
     ]
   }
 }
