@@ -26,6 +26,20 @@ ${code}`;
   },
 };
 
+// Fix Keystatic OAuth: add redirect_uri to token exchange (required by GitHub
+// when redirect_uri was provided in the authorize step)
+const keystatic_oauth_fix = {
+  name: 'keystatic-oauth-fix',
+  transform(code, id) {
+    if (id.includes('keystatic-core-api-generic') && code.includes("url.searchParams.set('code', code)")) {
+      return code.replaceAll(
+        "url.searchParams.set('code', code);",
+        "url.searchParams.set('code', code);\n  url.searchParams.set('redirect_uri', new URL(req.url).origin + '/api/keystatic/github/oauth/callback');"
+      );
+    }
+  },
+};
+
 export default defineConfig({
   integrations: [
     react(),
@@ -35,6 +49,6 @@ export default defineConfig({
   ],
   adapter: cloudflare(),
   vite: {
-    plugins: [messageChannelPolyfill],
+    plugins: [messageChannelPolyfill, keystatic_oauth_fix],
   },
 });
