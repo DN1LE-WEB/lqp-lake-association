@@ -224,12 +224,17 @@ function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
   );
 }
 
-function parseContent(content: string): Record<string, unknown> | undefined {
-  if (!content) return undefined;
+function parseContent(content: string): string | Record<string, unknown> | undefined {
+  if (!content || content === '{}') return undefined;
   try {
     const parsed = JSON.parse(content);
+    // TipTap doc format - pass through directly
     if (parsed && typeof parsed === 'object' && parsed.type === 'doc') {
       return parsed;
+    }
+    // Our seed format {"type":"text","content":"the text"} - extract as HTML
+    if (parsed && parsed.type === 'text' && typeof parsed.content === 'string') {
+      return parsed.content.split('\n').filter((l: string) => l.trim()).map((l: string) => `<p>${l}</p>`).join('');
     }
     return undefined;
   } catch {
