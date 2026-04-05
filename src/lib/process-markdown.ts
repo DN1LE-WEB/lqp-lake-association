@@ -17,7 +17,10 @@ export async function processMarkdown(raw: string): Promise<string> {
     // Strip image query params
     .replace(/(\/images\/tournaments\/[^\s\)]+)\?\d+/g, '$1')
     // Remove linked image wrappers [![](thumb)](full) -> ![](full)
-    .replace(/\[!\[[^\]]*\]\([^\)]+\)\]\(([^\)]+)\)/g, '![]($1)');
+    .replace(/\[!\[[^\]]*\]\([^\)]+\)\]\(([^\)]+)\)/g, '![]($1)')
+    // Strip /published/ and /editor/ subdirs from image paths
+    .replace(/\/images\/tournaments\/published\//g, '/images/tournaments/')
+    .replace(/\/images\/tournaments\/editor\//g, '/images/tournaments/');
 
   // Strip nav lines (sidebar content from weebly)
   const navPatterns = [
