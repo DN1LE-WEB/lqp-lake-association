@@ -1,0 +1,29 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+import SectionEditor from '../../../components/admin/SectionEditor';
+
+const { slug } = Astro.params;
+const db = getDB(Astro);
+const section = await db.prepare("SELECT * FROM sections WHERE slug = ?").bind(slug).first();
+
+if (!section) {
+  return Astro.redirect('/admin/sections');
+}
+---
+
+<AdminLayout title={`Edit: ${section.title}`}>
+  <div class="max-w-4xl">
+    <div class="mb-4">
+      <a href="/admin/sections" class="text-sm text-teal hover:underline">&larr; Back to Sections</a>
+    </div>
+    <SectionEditor
+      client:only="react"
+      slug={section.slug as string}
+      title={section.title as string}
+      content={section.content as string}
+      visible={!!section.visible}
+    />
+  </div>
+</AdminLayout>

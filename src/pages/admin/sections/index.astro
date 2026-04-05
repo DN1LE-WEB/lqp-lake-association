@@ -1,0 +1,90 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+
+const db = getDB(Astro);
+
+// Handle toggle POST
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const slug = formData.get('slug') as string;
+  const currentVisible = formData.get('visible') === '1';
+  const newVisible = currentVisible ? 0 : 1;
+  await db.prepare("UPDATE sections SET visible = ?, updated_at = datetime('now') WHERE slug = ?").bind(newVisible, slug).run();
+  return Astro.redirect('/admin/sections');
+}
+
+const { results: sections } = await db.prepare("SELECT * FROM sections ORDER BY sort_order").all();
+---
+
+<AdminLayout title="Homepage Sections">
+  <div class="max-w-4xl">
+    <div class="flex items-center justify-between mb-6">
+      <p class="text-gray-600">Toggle homepage sections on or off, and edit their content.</p>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50">
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Slug</th>
+            <th class="text-center px-4 py-3 font-semibold text-gray-700">Visible</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Updated</th>
+            <th class="text-right px-4 py-3 font-semibold text-gray-700">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sections.map((section: any) => (
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3 font-medium text-navy">{section.title}</td>
+              <td class="px-4 py-3 text-gray-500 font-mono text-xs">{section.slug}</td>
+              <td class="px-4 py-3 text-center">
+                <form method="POST">
+                  <input type="hidden" name="slug" value={section.slug} />
+                  <input type="hidden" name="visible" value={section.visible ? '1' : '0'} />
+                  <button
+                    type="submit"
+                    class:list={[
+                      'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-2',
+                      section.visible ? 'bg-teal' : 'bg-gray-300',
+                    ]}
+                    title={section.visible ? 'Click to hide' : 'Click to show'}
+                  >
+                    <span
+                      class:list={[
+                        'inline-block h-4 w-4 rounded-full bg-white transition-transform shadow',
+                        section.visible ? 'translate-x-6' : 'translate-x-1',
+                      ]}
+                    />
+                  </button>
+                </form>
+              </td>
+              <td class="px-4 py-3 text-gray-500">
+                {section.updated_at
+                  ? new Date(section.updated_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                  : 'Never'}
+              </td>
+              <td class="px-4 py-3 text-right">
+                <a
+                  href={`/admin/sections/${section.slug}`}
+                  class="inline-flex items-center px-3 py-1.5 bg-teal text-white text-xs font-medium rounded-md hover:opacity-90 transition-opacity"
+                >
+                  Edit
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {sections.length === 0 && (
+        <div class="px-4 py-8 text-center text-gray-400">No sections found.</div>
+      )}
+    </div>
+  </div>
+</AdminLayout>
