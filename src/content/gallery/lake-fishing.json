@@ -1,0 +1,16 @@
+{
+  "title": "Lake Fishing",
+  "description": "Fishing on Lac Qui Parle Lake",
+  "date": "2015-01-01",
+  "category": "fishing",
+  "images": [
+    { "image": "/images/original/9830291_orig.jpg", "caption": "On the water" },
+    { "image": "/images/original/9017893.jpg", "caption": "Fish catch" },
+    { "image": "/images/original/3489574.jpg", "caption": "Fishing day" },
+    { "image": "/images/original/8751468.jpg", "caption": "Lake scene" },
+    { "image": "/images/original/8220424.jpg", "caption": "Walleye fishing" },
+    { "image": "/images/original/5632435.jpg", "caption": "Lake life" },
+    { "image": "/images/original/3067261.jpg", "caption": "Catch of the day" },
+    { "image": "/images/original/2610052.jpg", "caption": "On the lake" }
+  ]
+}
