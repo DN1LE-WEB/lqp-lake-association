@@ -1,0 +1,35 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+import LeagueEditor from '../../../components/admin/LeagueEditor';
+
+const { id } = Astro.params;
+const isNew = id === 'new';
+
+let season: any = null;
+if (!isNew) {
+  const db = getDB(Astro);
+  season = await db.prepare("SELECT * FROM fishing_league WHERE id = ?").bind(id).first();
+  if (!season) {
+    return Astro.redirect('/admin/league');
+  }
+}
+---
+
+<AdminLayout title={isNew ? 'New Season' : `Edit: ${season.title}`}>
+  <div class="max-w-4xl">
+    <div class="mb-4">
+      <a href="/admin/league" class="text-sm text-teal hover:underline">&larr; Back to Fishing League</a>
+    </div>
+    <LeagueEditor
+      client:only="react"
+      id={isNew ? 'new' : String(season.id)}
+      title={isNew ? '' : (season.title as string)}
+      year={isNew ? new Date().getFullYear() : (season.year as number)}
+      results_url={isNew ? '' : (season.results_url as string || '')}
+      content={isNew ? '' : (season.content as string)}
+      visible={isNew ? true : Boolean(season.visible)}
+    />
+  </div>
+</AdminLayout>

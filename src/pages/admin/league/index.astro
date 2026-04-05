@@ -1,0 +1,67 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+
+const db = getDB(Astro);
+const { results: seasons } = await db.prepare(
+  "SELECT * FROM fishing_league ORDER BY year DESC"
+).all();
+---
+
+<AdminLayout title="Fishing League">
+  <div class="max-w-4xl">
+    <div class="flex items-center justify-between mb-6">
+      <p class="text-gray-600">Manage fishing league seasons.</p>
+      <a
+        href="/admin/league/new"
+        class="inline-flex items-center px-4 py-2 bg-teal text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+      >
+        + Add Season
+      </a>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-200 bg-gray-50">
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Title</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Year</th>
+            <th class="text-left px-4 py-3 font-semibold text-gray-700">Status</th>
+            <th class="text-right px-4 py-3 font-semibold text-gray-700">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {seasons.map((item: any) => (
+            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <td class="px-4 py-3 font-medium text-navy">{item.title}</td>
+              <td class="px-4 py-3 text-gray-600">{item.year}</td>
+              <td class="px-4 py-3">
+                {item.visible ? (
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Visible
+                  </span>
+                ) : (
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                    Hidden
+                  </span>
+                )}
+              </td>
+              <td class="px-4 py-3 text-right">
+                <a
+                  href={`/admin/league/${item.id}`}
+                  class="inline-flex items-center px-3 py-1.5 bg-teal text-white text-xs font-medium rounded-md hover:opacity-90 transition-opacity"
+                >
+                  Edit
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {seasons.length === 0 && (
+        <div class="px-4 py-8 text-center text-gray-400">No seasons found. Click "Add Season" to create one.</div>
+      )}
+    </div>
+  </div>
+</AdminLayout>

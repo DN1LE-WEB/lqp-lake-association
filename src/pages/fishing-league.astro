@@ -1,52 +1,63 @@
 ---
+export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { getDB } from '../lib/db';
+
+const db = getDB(Astro);
+const { results: seasons } = await db.prepare(
+  "SELECT * FROM fishing_league WHERE visible = 1 ORDER BY year DESC"
+).all();
+
+const current = seasons.length > 0 ? seasons[0] : null;
+const past = seasons.slice(1);
 ---
 
 <BaseLayout title="Fishing League">
   <PageHeader title="LQP Fishing League" />
 
   <section class="mx-auto max-w-[1000px] px-6 pb-10 lg:px-12">
-    <div class="rounded-[14px] border border-teal-border/10 bg-white p-8">
-      <div class="section-tag">Current Season</div>
-      <h2 class="font-display text-2xl font-bold text-[#1a1a1a]">2026 Lac Qui Parle Walleye League</h2>
+    {current ? (
+      <div class="rounded-[14px] border border-teal-border/10 bg-white p-8">
+        <div class="section-tag">Current Season</div>
+        <h2 class="font-display text-2xl font-bold text-[#1a1a1a]">{current.title}</h2>
 
-      <div class="mt-6">
-        <h3 class="mb-4 font-display text-lg font-bold text-[#1a1a1a]">2026 Roster &amp; Weekly Results</h3>
-        <div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-          {['Week #1 Results', 'Week #2 Results', 'Week #3 Results', 'Week #4 Results', 'Week #5 Results', 'Week #6 Results', 'End of the Year Results'].map(week => (
-            <div class="flex items-center justify-between rounded-[10px] border border-teal-border bg-white px-4 py-3">
-              <span class="text-sm font-medium text-[#1a1a1a]">{week}</span>
+        {current.content && (
+          <div class="mt-4 prose prose-sm max-w-none text-prairie" set:html={current.content} />
+        )}
+
+        {current.results_url && (
+          <div class="mt-6">
+            <a
+              href={current.results_url as string}
+              target="_blank"
+              class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white"
+            >
+              {current.title} Results
+            </a>
+          </div>
+        )}
+      </div>
+    ) : (
+      <div class="rounded-[14px] border border-teal-border/10 bg-white p-8 text-center text-gray-500">
+        No current season information available.
+      </div>
+    )}
+  </section>
+
+  {past.length > 0 && (
+    <section class="bg-white px-6 py-16 lg:px-12">
+      <div class="mx-auto max-w-[1000px]">
+        <div class="section-tag">Past Seasons</div>
+        <h2 class="section-heading mb-8">League History</h2>
+        <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {past.map((s: any) => (
+            <div class="rounded-[10px] border border-teal-border/10 bg-white px-5 py-4">
+              <span class="font-display text-[15px] font-bold text-[#1a1a1a]">{s.title}</span>
             </div>
           ))}
         </div>
       </div>
-
-      <div class="mt-6">
-        <a
-          href="https://docs.google.com/spreadsheets/d/1EUozTvo7sJOHElyerPSpSfOPyTikDXBZgNaomz8-MhY/edit?gid=0#gid=0"
-          target="_blank"
-          class="inline-block rounded-[10px] border border-teal-border bg-white/50 px-5 py-2.5 text-sm font-semibold text-[#1a1a1a] transition-colors hover:bg-white"
-        >
-          2026 Lac Qui Parle Lake Walleye League Results
-        </a>
-      </div>
-    </div>
-  </section>
-
-
-  <section class="bg-white px-6 py-16 lg:px-12">
-    <div class="mx-auto max-w-[1000px]">
-      <div class="section-tag">Past Seasons</div>
-      <h2 class="section-heading mb-8">League History</h2>
-      <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {[2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013].map(year => (
-          <div class="rounded-[10px] border border-teal-border/10 bg-white px-5 py-4">
-            <span class="font-display text-[15px] font-bold text-[#1a1a1a]">LQP Fishing League {year}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
+    </section>
+  )}
 </BaseLayout>

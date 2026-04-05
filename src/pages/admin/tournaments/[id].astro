@@ -1,0 +1,36 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getDB } from '../../../lib/db';
+import TournamentEditor from '../../../components/admin/TournamentEditor';
+
+const { id } = Astro.params;
+const isNew = id === 'new';
+
+let tournament: any = null;
+if (!isNew) {
+  const db = getDB(Astro);
+  tournament = await db.prepare("SELECT * FROM tournaments WHERE id = ?").bind(id).first();
+  if (!tournament) {
+    return Astro.redirect('/admin/tournaments');
+  }
+}
+---
+
+<AdminLayout title={isNew ? 'New Tournament' : `Edit: ${tournament.title}`}>
+  <div class="max-w-4xl">
+    <div class="mb-4">
+      <a href="/admin/tournaments" class="text-sm text-teal hover:underline">&larr; Back to Tournaments</a>
+    </div>
+    <TournamentEditor
+      client:only="react"
+      id={isNew ? 'new' : String(tournament.id)}
+      title={isNew ? '' : (tournament.title as string)}
+      year={isNew ? new Date().getFullYear() : (tournament.year as number)}
+      annual_number={isNew ? '' : (tournament.annual_number as string || '')}
+      date={isNew ? '' : (tournament.date as string || '')}
+      content={isNew ? '' : (tournament.content as string)}
+      visible={isNew ? true : Boolean(tournament.visible)}
+    />
+  </div>
+</AdminLayout>
