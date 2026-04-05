@@ -1,0 +1,96 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+let projects: any[] = [];
+try {
+  const dir = path.join(process.cwd(), 'src/content/projects');
+  if (fs.existsSync(dir)) {
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
+    projects = files.map(f => ({
+      slug: f.replace('.json', ''),
+      ...JSON.parse(fs.readFileSync(path.join(dir, f), 'utf-8')),
+    }));
+    projects.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  }
+} catch {}
+---
+
+<BaseLayout title="Lake Association Projects" description="Projects funded by the Lac Qui Parle Lake Association for the betterment of the lake.">
+  <section class="bg-lake-900 py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <h1 class="font-display text-4xl font-bold text-white sm:text-5xl">Lake Association Projects</h1>
+      <p class="mt-4 max-w-2xl text-lg text-lake-200">Conservation, infrastructure, and community projects funded by the LQP Lake Association.</p>
+    </div>
+  </section>
+
+  <section class="py-16 sm:py-24">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <!-- Featured Projects -->
+      <div class="mb-16 grid gap-8 md:grid-cols-2">
+        <div class="card border-l-4 border-l-lake-600">
+          <h3 class="font-display text-xl font-bold text-lake-900">Walleye Stocking Program</h3>
+          <p class="mt-3 text-lake-600">
+            Working with the Minnesota DNR, we fund the stocking of walleyes in Lac Qui Parle Lake. Our goal is to stock 25,000 walleyes. Young-of-the-year fish measuring 7-9" are fin-clipped on the bottom left pectoral fin for tracking.
+          </p>
+        </div>
+        <div class="card border-l-4 border-l-forest-600">
+          <h3 class="font-display text-xl font-bold text-lake-900">Tri-County Let's Go Fishing</h3>
+          <p class="mt-3 text-lake-600">
+            The Lake Association recently donated $12,000 to Tri-County Let's Go Fishing, supporting youth fishing education and community engagement programs.
+          </p>
+        </div>
+        <div class="card border-l-4 border-l-sand-600">
+          <h3 class="font-display text-xl font-bold text-lake-900">Shoreline Protection</h3>
+          <p class="mt-3 text-lake-600">
+            Rip rap projects on the erodible shorelines of Lac Qui Parle Lake help prevent erosion and protect the lake's habitat for fish and wildlife.
+          </p>
+        </div>
+        <div class="card border-l-4 border-l-lake-400">
+          <h3 class="font-display text-xl font-bold text-lake-900">Infrastructure Improvements</h3>
+          <p class="mt-3 text-lake-600">
+            Funding for fishing piers, boat ramps, and other access improvements that help anglers and outdoor enthusiasts enjoy Lac Qui Parle Lake.
+          </p>
+        </div>
+      </div>
+
+      <!-- Dam Cam -->
+      <div class="mb-16 card">
+        <h2 class="section-heading">LQP Lake "Dam Cam"</h2>
+        <p class="mt-4 text-lake-600">
+          Check out our Dam Cam for a live view of the Lac Qui Parle Lake dam. Stay updated on water levels and conditions.
+        </p>
+      </div>
+
+      <!-- Youth Activities -->
+      <div class="mb-16">
+        <h2 class="section-heading mb-8">Youth Activities</h2>
+        <div class="grid gap-6 sm:grid-cols-2">
+          <div class="card">
+            <h3 class="font-display text-lg font-bold text-lake-900">Youth Activities</h3>
+            <p class="mt-2 text-sm text-lake-600">
+              The LQP Lake Association supports youth fishing activities and education programs to foster the next generation of anglers and conservationists.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {projects.length > 0 && (
+        <div>
+          <h2 class="section-heading mb-8">All Projects</h2>
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map(project => (
+              <div class="card">
+                {project.image && <img src={project.image} alt={project.title} class="mb-4 rounded-xl object-cover" />}
+                <h3 class="font-display text-lg font-bold text-lake-900">{project.title}</h3>
+                {project.date && <p class="mt-1 text-sm text-lake-500">{project.date}</p>}
+                {project.description && <p class="mt-2 text-sm text-lake-600">{project.description}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

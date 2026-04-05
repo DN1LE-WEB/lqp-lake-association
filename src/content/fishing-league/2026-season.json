@@ -1,0 +1,15 @@
+{
+  "title": "2026 Season",
+  "year": 2026,
+  "resultsUrl": "https://docs.google.com/spreadsheets/d/1EUozTvo7sJOHElyerPSpSfOPyTikDXBZgNaomz8-MhY/edit?gid=0#gid=0",
+  "content": [],
+  "weeks": [
+    { "weekNumber": 1, "label": "Week #1 Results", "resultsUrl": "" },
+    { "weekNumber": 2, "label": "Week #2 Results", "resultsUrl": "" },
+    { "weekNumber": 3, "label": "Week #3 Results", "resultsUrl": "" },
+    { "weekNumber": 4, "label": "Week #4 Results", "resultsUrl": "" },
+    { "weekNumber": 5, "label": "Week #5 Results", "resultsUrl": "" },
+    { "weekNumber": 6, "label": "Week #6 Results", "resultsUrl": "" },
+    { "weekNumber": 7, "label": "End of Year Results", "resultsUrl": "" }
+  ]
+}

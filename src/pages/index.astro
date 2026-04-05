@@ -1,0 +1,212 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Load homepage content from Keystatic
+let homepage: any = {};
+try {
+  const homepagePath = path.join(process.cwd(), 'src/content/homepage.json');
+  if (fs.existsSync(homepagePath)) {
+    homepage = JSON.parse(fs.readFileSync(homepagePath, 'utf-8'));
+  }
+} catch {}
+
+const heroTitle = homepage.heroTitle || 'Lac Qui Parle Lake Association';
+const heroSubtitle = homepage.heroSubtitle || 'Preserving Minnesota\'s premier walleye fishery since 1982. Join us in keeping the tradition alive for future generations.';
+const boardMembers = homepage.boardMembers || 'Scott Monson, Steve Mitlyng, Joe Bungarden, Pete McGinty, Andy Johnson, Brett Jacobs, Gary Groothius';
+
+// Load upcoming tournament
+let tournaments: any[] = [];
+try {
+  const tournamentsDir = path.join(process.cwd(), 'src/content/tournaments');
+  if (fs.existsSync(tournamentsDir)) {
+    const files = fs.readdirSync(tournamentsDir).filter(f => f.endsWith('.json'));
+    tournaments = files.map(f => JSON.parse(fs.readFileSync(path.join(tournamentsDir, f), 'utf-8')));
+    tournaments.sort((a, b) => (b.year || 0) - (a.year || 0));
+  }
+} catch {}
+const latestTournament = tournaments[0];
+---
+
+<BaseLayout title="Home">
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden bg-lake-950">
+    <div class="absolute inset-0 bg-gradient-to-br from-lake-900/95 via-lake-950/90 to-lake-950"></div>
+    <div class="absolute inset-0 opacity-20" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cpath d=&quot;M0 30c10 0 10-8 20-8s10 8 20 8 10-8 20-8&quot; fill=&quot;none&quot; stroke=&quot;%23ffffff&quot; stroke-width=&quot;1&quot;/%3E%3C/svg%3E'); background-size: 60px 60px;"></div>
+    <div class="relative mx-auto max-w-7xl px-4 py-28 sm:px-6 sm:py-36 lg:px-8 lg:py-44">
+      <div class="max-w-3xl">
+        <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-lake-400/30 bg-lake-800/50 px-4 py-1.5 text-sm text-lake-200">
+          <span class="inline-block h-2 w-2 rounded-full bg-forest-400"></span>
+          Non-Profit Organization Est. 1982
+        </div>
+        <h1 class="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          {heroTitle}
+        </h1>
+        <p class="mt-6 text-lg leading-relaxed text-lake-200 sm:text-xl">
+          {heroSubtitle}
+        </p>
+        <div class="mt-10 flex flex-wrap gap-4">
+          <a href="/membership" class="btn-primary bg-forest-600 hover:bg-forest-700 focus-visible:outline-forest-500">
+            Become a Member
+          </a>
+          <a href="/tournament" class="btn-secondary border-lake-400/50 text-lake-100 hover:bg-lake-800/50">
+            Walleye Tournament
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- Wave divider -->
+    <div class="absolute bottom-0 left-0 right-0">
+      <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full">
+        <path d="M0 40C240 80 480 0 720 40C960 80 1200 0 1440 40V80H0V40Z" fill="rgb(248 250 255 / 0.3)" />
+        <path d="M0 56C240 80 480 24 720 56C960 80 1200 24 1440 56V80H0V56Z" fill="currentColor" class="text-lake-50/30" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- Welcome Section -->
+  <section class="py-20 sm:py-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid gap-16 lg:grid-cols-2 lg:items-center">
+        <div>
+          <h2 class="section-heading">Welcome to the<br />LQP Lake Association</h2>
+          <div class="mt-6 space-y-4 text-base leading-relaxed text-lake-700">
+            <p>
+              Walleye and waterfowl are two things that come to mind when outdoorsmen around Minnesota hear the words Lac Qui Parle Lake. Lac Qui Parle has a tradition of being one of the best walleye fisheries in the state.
+            </p>
+            <p>
+              The Lac Qui Parle Lake Association was created in 1982 as a non-profit organization. Since its inception, we have been involved in funding numerous lake projects as well as projects that help aid the outdoor enthusiast.
+            </p>
+            <p>
+              We work in conjunction with the Minnesota DNR and have been instrumental in providing funding for walleye stocking programs, fishing piers, boat ramps and rip rap projects on the erodible shorelines of Lac Qui Parle Lake.
+            </p>
+          </div>
+          <div class="mt-8">
+            <a href="/about" class="btn-secondary">Learn More About Our Mission</a>
+          </div>
+        </div>
+        <div class="space-y-6">
+          <!-- Board Members Card -->
+          <div class="card border-l-4 border-l-lake-600">
+            <h3 class="mb-3 font-display text-lg font-bold text-lake-900">Board of Directors</h3>
+            <p class="text-sm leading-relaxed text-lake-700">{boardMembers}</p>
+          </div>
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="card text-center">
+              <div class="font-display text-3xl font-bold text-lake-700">1982</div>
+              <div class="mt-1 text-sm text-lake-500">Established</div>
+            </div>
+            <div class="card text-center">
+              <div class="font-display text-3xl font-bold text-lake-700">40+</div>
+              <div class="mt-1 text-sm text-lake-500">Years of Service</div>
+            </div>
+            <div class="card text-center">
+              <div class="font-display text-3xl font-bold text-forest-600">25,000</div>
+              <div class="mt-1 text-sm text-lake-500">Walleye Stocking Goal</div>
+            </div>
+            <div class="card text-center">
+              <div class="font-display text-3xl font-bold text-forest-600">46th</div>
+              <div class="mt-1 text-sm text-lake-500">Annual Tournament</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Sections -->
+  <section class="bg-white py-20 sm:py-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h2 class="section-heading">Get Involved</h2>
+        <p class="mx-auto mt-4 max-w-2xl text-lg text-lake-600">
+          From fishing tournaments to conservation projects, there are many ways to support Lac Qui Parle Lake.
+        </p>
+      </div>
+
+      <div class="mt-16 grid gap-8 md:grid-cols-3">
+        <!-- Tournament Card -->
+        <a href="/tournament" class="group card flex flex-col">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-lake-100 text-lake-700 transition-colors group-hover:bg-lake-700 group-hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0016.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.003 6.003 0 01-3.77 1.522m0 0a6.003 6.003 0 01-3.77-1.522" />
+            </svg>
+          </div>
+          <h3 class="font-display text-xl font-bold text-lake-900">Walleye Tournament</h3>
+          {latestTournament && (
+            <p class="mt-1 text-sm font-medium text-forest-600">
+              {latestTournament.annualNumber} Annual - {latestTournament.date || latestTournament.year}
+            </p>
+          )}
+          <p class="mt-2 flex-1 text-sm text-lake-600">
+            Join anglers from across the state for our annual walleye tournament on Lac Qui Parle Lake.
+          </p>
+          <span class="mt-4 text-sm font-semibold text-lake-700 group-hover:text-lake-900">
+            View Details &rarr;
+          </span>
+        </a>
+
+        <!-- Fishing League Card -->
+        <a href="/fishing-league" class="group card flex flex-col">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-forest-100 text-forest-700 transition-colors group-hover:bg-forest-700 group-hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
+            </svg>
+          </div>
+          <h3 class="font-display text-xl font-bold text-lake-900">Fishing League</h3>
+          <p class="mt-1 text-sm font-medium text-forest-600">2026 Season</p>
+          <p class="mt-2 flex-1 text-sm text-lake-600">
+            Compete weekly throughout the summer season. Check weekly results and season standings.
+          </p>
+          <span class="mt-4 text-sm font-semibold text-lake-700 group-hover:text-lake-900">
+            View League &rarr;
+          </span>
+        </a>
+
+        <!-- Membership Card -->
+        <a href="/membership" class="group card flex flex-col">
+          <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-sand-100 text-sand-700 transition-colors group-hover:bg-sand-700 group-hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+            </svg>
+          </div>
+          <h3 class="font-display text-xl font-bold text-lake-900">Become a Member</h3>
+          <p class="mt-1 text-sm font-medium text-sand-600">Only $10/year</p>
+          <p class="mt-2 flex-1 text-sm text-lake-600">
+            Support conservation efforts and help keep Lac Qui Parle Lake a premier fishing destination.
+          </p>
+          <span class="mt-4 text-sm font-semibold text-lake-700 group-hover:text-lake-900">
+            Join Today &rarr;
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent News / Announcement -->
+  <section class="py-20 sm:py-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="overflow-hidden rounded-3xl bg-gradient-to-r from-lake-800 to-lake-950 p-8 text-white shadow-xl sm:p-12 lg:p-16">
+        <div class="grid gap-8 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h2 class="font-display text-3xl font-bold sm:text-4xl">Help Us Stock 25,000 Walleyes</h2>
+            <p class="mt-4 text-lg leading-relaxed text-lake-200">
+              The LQP Lake Association has a goal to stock 25,000 walleyes. Your membership and donations directly fund walleye stocking programs in partnership with the Minnesota DNR.
+            </p>
+            <p class="mt-4 text-sm text-lake-300">
+              Watch for fin-clipped walleyes! Fish stocked through our program have the bottom left pectoral fin clipped. If you catch one, email us at minnkotatackle@yahoo.com.
+            </p>
+          </div>
+          <div class="text-center lg:text-right">
+            <div class="inline-block rounded-2xl bg-white/10 p-8 backdrop-blur-sm">
+              <div class="font-display text-5xl font-bold text-forest-300">$12,000</div>
+              <div class="mt-2 text-sm text-lake-300">Recently donated to<br />Tri-County Let's Go Fishing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"$HOME/.local/bin:$PATH\")",
+      "Bash(npx -y @anthropic-ai/claude-code-mcp --help)",
+      "Bash(npx -y firecrawl-mcp --help)",
+      "Bash(export FIRECRAWL_API_KEY=\"fc-641516873ff14cf7bf281cb799e043e0\")",
+      "Bash(npx -y firecrawl-mcp)",
+      "Bash(mcp tools:*)",
+      "Bash(pip install:*)",
+      "Bash(curl:*)",
+      "Bash(python -m json.tool)",
+      "Bash(python -c ':*)",
+      "Bash(npm create:*)",
+      "Bash(nvm list:*)",
+      "Bash(nvm use:*)",
+      "Bash(nvm install:*)",
+      "Bash(where node:*)",
+      "Read(//c/Program Files/nodejs/**)",
+      "Bash(fnm list:*)",
+      "Bash(volta list:*)",
+      "Bash(fnm use:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)"
+    ]
+  }
+}
