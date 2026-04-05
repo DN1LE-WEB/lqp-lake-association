@@ -2,3 +2,12 @@ name = "lqp-lake-association"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat_v2"]
 pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lqp-lake-cms"
+database_id = "24eec073-d2f2-44fe-bb54-a90da1ec8907"
+
+[[r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "lqp-lake-uploads"
