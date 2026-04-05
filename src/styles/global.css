@@ -26,16 +26,14 @@
   }
 
   .card {
-    @apply rounded-[14px] bg-white border border-sage-pale/30 transition-all duration-200;
+    @apply rounded-[14px] bg-white border border-teal-border transition-all duration-200;
   }
 
   .card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 28px rgba(0,0,0,0.07);
-    border-color: theme('colors.sage.light');
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
   }
 
-  /* Prose styling for content pages */
   .prose-prairie {
     @apply text-prairie leading-relaxed;
   }
@@ -54,6 +52,6 @@
   }
 
   .prose-prairie a {
-    @apply text-sage font-medium hover:text-sage-light transition-colors;
+    @apply text-teal font-medium transition-colors;
   }
 }

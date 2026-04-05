@@ -4,24 +4,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        sage: {
-          DEFAULT: '#5C6B52',
-          light: '#7C8C6E',
-          pale: '#E8EDE3',
-          mist: '#D5DDD0',
-        },
-        wheat: {
-          DEFAULT: '#D4C5A0',
-          light: '#EDE5D0',
-          pale: '#F5F2EB',
+        teal: {
+          DEFAULT: '#3D7A68',
+          light: '#6BB8A5',
+          pale: '#EDF5F2',
+          border: '#C8DDD6',
         },
         prairie: {
           DEFAULT: '#52525B',
           dark: '#3F3F46',
         },
         rust: {
-          DEFAULT: '#9A4A2A',
-          light: '#B85C38',
+          DEFAULT: '#8B4A2A',
+        },
+        navy: {
+          DEFAULT: '#0F1B2D',
+          light: '#0B1524',
         },
       },
       fontFamily: {
