@@ -1,116 +1,59 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import fs from 'node:fs';
-import path from 'node:path';
-
-let tournaments: any[] = [];
-try {
-  const dir = path.join(process.cwd(), 'src/content/tournaments');
-  if (fs.existsSync(dir)) {
-    const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
-    tournaments = files.map(f => ({
-      slug: f.replace('.json', ''),
-      ...JSON.parse(fs.readFileSync(path.join(dir, f), 'utf-8')),
-    }));
-    tournaments.sort((a, b) => (b.year || 0) - (a.year || 0));
-  }
-} catch {}
-const latest = tournaments[0];
-const past = tournaments.slice(1);
+import PageHeader from '../components/PageHeader.astro';
 ---
 
-<BaseLayout title="Walleye Tournament" description="Annual Lac Qui Parle Lake Walleye Tournament - one of Minnesota's premier walleye fishing events.">
-  <section class="bg-lake-900 py-20">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <h1 class="font-display text-4xl font-bold text-white sm:text-5xl">Lac Qui Parle<br />Walleye Tournament</h1>
-      <p class="mt-4 max-w-2xl text-lg text-lake-200">One of Minnesota's longest-running walleye fishing tournaments.</p>
+<BaseLayout title="Walleye Tournament">
+  <PageHeader title="Lac Qui Parle Walleye Tournament" />
+
+  <section class="mx-auto max-w-[1000px] px-6 pb-10 lg:px-12">
+    <!-- Current Tournament -->
+    <div class="rounded-[14px] border border-sage/10 bg-white p-8">
+      <div class="section-tag">Upcoming</div>
+      <h2 class="font-display text-2xl font-bold text-bark-deep">46th Annual Lac Qui Parle Lake Walleye Tournament</h2>
+      <p class="mt-2 text-lg font-semibold text-sage">Saturday, June 6th, 2026</p>
+      <p class="mt-4 text-[15px] leading-[1.85] text-stone">All Tournament Information is updated late March 2026.</p>
+      <p class="mt-3 text-[15px] text-stone">2026 Tournament Information — Click on links below to download a printable version:</p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/downloads/cover_letter_2026.docx" class="rounded-[10px] border border-sage-pale bg-sage-pale/50 px-5 py-2.5 text-sm font-semibold text-bark transition-colors hover:bg-sage-pale">Cover Letter</a>
+        <a href="/downloads/tournament_rules_2026.docx" class="rounded-[10px] border border-sage-pale bg-sage-pale/50 px-5 py-2.5 text-sm font-semibold text-bark transition-colors hover:bg-sage-pale">Tournament Rules</a>
+        <a href="/downloads/2026_release_of_liability.docx" class="rounded-[10px] border border-sage-pale bg-sage-pale/50 px-5 py-2.5 text-sm font-semibold text-bark transition-colors hover:bg-sage-pale">Release of Liability</a>
+        <a href="/downloads/lqp_membership_application_single.pdf" class="rounded-[10px] border border-sage-pale bg-sage-pale/50 px-5 py-2.5 text-sm font-semibold text-bark transition-colors hover:bg-sage-pale">Membership Application</a>
+      </div>
     </div>
   </section>
 
-  <section class="py-16 sm:py-24">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      {latest ? (
-        <div class="mb-16">
-          <div class="overflow-hidden rounded-3xl bg-gradient-to-r from-lake-700 to-lake-900 p-8 text-white shadow-xl sm:p-12">
-            <div class="mb-2 inline-flex items-center rounded-full bg-forest-500/20 px-3 py-1 text-sm font-medium text-forest-300">
-              Upcoming Tournament
-            </div>
-            <h2 class="mt-2 font-display text-3xl font-bold sm:text-4xl">
-              {latest.annualNumber} Annual Tournament
-            </h2>
-            {latest.date && <p class="mt-2 text-xl text-lake-200">{latest.date}</p>}
-            {latest.description && <p class="mt-4 max-w-2xl text-lake-200">{latest.description}</p>}
-            <div class="mt-8 flex flex-wrap gap-4">
-              {latest.coverLetterUrl && (
-                <a href={latest.coverLetterUrl} class="btn-primary bg-white text-lake-900 hover:bg-lake-100" target="_blank">
-                  Cover Letter
-                </a>
-              )}
-              {latest.rulesUrl && (
-                <a href={latest.rulesUrl} class="btn-secondary border-white/50 text-white hover:bg-white/10" target="_blank">
-                  Tournament Rules
-                </a>
-              )}
-              {latest.liabilityUrl && (
-                <a href={latest.liabilityUrl} class="btn-secondary border-white/50 text-white hover:bg-white/10" target="_blank">
-                  Liability Waiver
-                </a>
-              )}
-              {latest.resultsUrl && (
-                <a href={latest.resultsUrl} class="btn-secondary border-white/50 text-white hover:bg-white/10" target="_blank">
-                  View Results
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div class="mb-16 rounded-3xl bg-gradient-to-r from-lake-700 to-lake-900 p-8 text-white shadow-xl sm:p-12">
-          <h2 class="font-display text-3xl font-bold sm:text-4xl">46th Annual Tournament</h2>
-          <p class="mt-2 text-xl text-lake-200">Saturday, June 6th, 2026</p>
-          <p class="mt-4 text-lake-200">Tournament information will be updated in late March 2026. Check back for cover letters, rules, and registration details.</p>
-          <a href="/membership" class="btn-primary mt-8 bg-forest-600 hover:bg-forest-700">Become a Member</a>
-        </div>
-      )}
+  <div class="blend-linen-to-sage"></div>
 
-      {past.length > 0 && (
-        <div>
-          <h2 class="section-heading mb-8">Past Tournaments</h2>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {past.map(t => (
-              <div class="card">
-                <h3 class="font-display text-lg font-bold text-lake-900">{t.annualNumber} Annual ({t.year})</h3>
-                {t.resultsUrl && (
-                  <a href={t.resultsUrl} target="_blank" class="mt-2 inline-block text-sm font-medium text-lake-600 hover:text-lake-800">
-                    View Results &rarr;
-                  </a>
-                )}
-              </div>
-            ))}
+  <!-- Past Tournaments -->
+  <section class="bg-sage-pale px-6 py-16 lg:px-12">
+    <div class="mx-auto max-w-[1000px]">
+      <div class="section-tag">Tournament History</div>
+      <h2 class="section-heading mb-8">Past Tournaments</h2>
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {[
+          { label: '45th Annual (2025)', href: '#' },
+          { label: '44th Annual (2024)', href: '#' },
+          { label: '43rd Annual (2023)', href: '#' },
+          { label: '42nd Annual (2022)', href: '#' },
+          { label: '41st Annual (2021)', href: '#' },
+          { label: '41st Annual (2020)', href: '#' },
+          { label: '40th Annual (2019)', href: '#' },
+          { label: '39th Annual (2018)', href: '#' },
+          { label: '38th Annual (2017)', href: '#' },
+          { label: '37th Annual (2016)', href: '#' },
+          { label: '36th Annual (2015)', href: '#' },
+          { label: '35th Annual (2014)', href: '#' },
+          { label: '34th Annual (2013)', href: '#' },
+          { label: '33rd Annual (2012)', href: '#' },
+        ].map(t => (
+          <div class="rounded-[10px] border border-sage/10 bg-white px-5 py-4">
+            <span class="font-display text-[15px] font-bold text-bark">{t.label}</span>
           </div>
-        </div>
-      )}
-
-      {tournaments.length === 0 && (
-        <div>
-          <h2 class="section-heading mb-8">Tournament History</h2>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { label: '46th Annual (2026)', date: 'June 6, 2026' },
-              { label: '45th Annual (2025)', date: '2025' },
-              { label: '44th Annual (2024)', date: '2024' },
-              { label: '43rd Annual (2023)', date: '2023' },
-              { label: '42nd Annual (2022)', date: '2022' },
-              { label: '41st Annual (2021)', date: '2021' },
-            ].map(t => (
-              <div class="card">
-                <h3 class="font-display text-lg font-bold text-lake-900">{t.label}</h3>
-                <p class="mt-1 text-sm text-lake-500">{t.date}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   </section>
+
+  <div class="blend-sage-to-dark"></div>
 </BaseLayout>
