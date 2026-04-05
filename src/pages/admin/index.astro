@@ -1,0 +1,62 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getDB } from '../../lib/db';
+
+const db = getDB(Astro);
+
+const [pages, news, sections, albums, photos, tournaments, league] = await Promise.all([
+  db.prepare("SELECT COUNT(*) as count FROM pages").first<{ count: number }>(),
+  db.prepare("SELECT COUNT(*) as count FROM news").first<{ count: number }>(),
+  db.prepare("SELECT COUNT(*) as count FROM sections").first<{ count: number }>(),
+  db.prepare("SELECT COUNT(*) as count FROM gallery_albums").first<{ count: number }>(),
+  db.prepare("SELECT COUNT(*) as count FROM gallery_photos").first<{ count: number }>(),
+  db.prepare("SELECT COUNT(*) as count FROM tournaments").first<{ count: number }>(),
+  db.prepare("SELECT COUNT(*) as count FROM fishing_league").first<{ count: number }>(),
+]);
+
+const stats = [
+  { label: 'Pages', count: pages?.count ?? 0, href: '/admin/pages' },
+  { label: 'News Items', count: news?.count ?? 0, href: '/admin/news' },
+  { label: 'Sections', count: sections?.count ?? 0, href: '/admin/sections' },
+  { label: 'Gallery Albums', count: albums?.count ?? 0, href: '/admin/gallery' },
+  { label: 'Photos', count: photos?.count ?? 0, href: '/admin/gallery' },
+  { label: 'Tournaments', count: tournaments?.count ?? 0, href: '/admin/tournaments' },
+  { label: 'League Seasons', count: league?.count ?? 0, href: '/admin/league' },
+];
+
+const quickLinks = [
+  { label: 'Edit News', href: '/admin/news' },
+  { label: 'Manage Gallery', href: '/admin/gallery' },
+  { label: 'Edit Pages', href: '/admin/pages' },
+  { label: 'Manage Tournaments', href: '/admin/tournaments' },
+  { label: 'Settings', href: '/admin/settings' },
+];
+---
+
+<AdminLayout title="Dashboard">
+  <div class="max-w-5xl">
+    <p class="text-gray-600 mb-6">Welcome to the LQP Lake Association admin panel.</p>
+
+    <!-- Stats grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+      {stats.map((stat) => (
+        <a href={stat.href} class="block bg-white border border-gray-200 rounded-lg p-4 hover:border-teal transition-colors">
+          <div class="text-3xl font-display font-bold text-navy">{stat.count}</div>
+          <div class="text-sm text-gray-500 mt-1">{stat.label}</div>
+        </a>
+      ))}
+    </div>
+
+    <!-- Quick links -->
+    <h2 class="font-display font-bold text-navy text-base mb-3">Quick Links</h2>
+    <div class="flex flex-wrap gap-2">
+      {quickLinks.map((link) => (
+        <a href={link.href} class="inline-flex items-center px-4 py-2 bg-teal text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity">
+          {link.label}
+        </a>
+      ))}
+    </div>
+  </div>
+</AdminLayout>
