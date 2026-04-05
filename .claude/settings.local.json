@@ -21,7 +21,12 @@
       "Bash(volta list:*)",
       "Bash(fnm use:*)",
       "Bash(gh auth:*)",
-      "Bash(gh repo:*)"
+      "Bash(gh repo:*)",
+      "Bash(export FC_KEY=\"fc-641516873ff14cf7bf281cb799e043e0\")",
+      "Bash(python screenshot.py)",
+      "Bash(python grab_original.py)",
+      "Bash(python upscale.py)",
+      "Bash(python upscale2.py)"
     ]
   }
 }

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navy + Cool Green Swatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; }
+
+  .preview {
+    display: grid;
+    grid-template-rows: auto auto auto;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: #0F1B2D;
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Zilla Slab', serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: white;
+  }
+  .logo-badge {
+    width: 36px; height: 36px;
+    background: #3D7A68;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 12px; font-weight: 700;
+  }
+  .logo small {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    color: #6BB8A5;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .nav { display: flex; gap: 20px; }
+  .nav a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 12px; font-weight: 500; }
+
+  /* Hero */
+  .hero {
+    background: #0F1B2D;
+    padding: 60px 48px 0;
+  }
+  .hero-tag {
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: #6BB8A5; font-weight: 600; margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Zilla Slab', serif;
+    font-size: 44px; font-weight: 700; color: white; line-height: 1.15;
+  }
+  .hero h1 em { font-style: italic; font-weight: 400; color: #6BB8A5; }
+  .hero img { width: 100%; margin-top: 32px; display: block; }
+
+  /* Content */
+  .content {
+    background: white;
+    padding: 48px;
+  }
+  .content-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 48px;
+  }
+  .tag {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+    color: #8B4A2A; font-weight: 600; margin-bottom: 10px;
+  }
+  .content h2 {
+    font-family: 'Zilla Slab', serif;
+    font-size: 28px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;
+  }
+  .content p {
+    font-size: 14px; line-height: 1.85; color: #52525B; margin-bottom: 12px;
+  }
+  .board {
+    background: #EDF5F2;
+    border: 1px solid #C8DDD6;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .board h3 {
+    font-family: 'Zilla Slab', serif;
+    font-size: 15px; font-weight: 700; color: #3D7A68; margin-bottom: 8px;
+  }
+  .board p { font-size: 13px; color: #3F3F46; line-height: 2; }
+
+  hr { border: none; border-top: 1px solid #C8DDD6; max-width: 900px; margin: 0 auto; }
+
+  /* Cards */
+  .cards {
+    background: white;
+    padding: 48px;
+  }
+  .cards-inner { max-width: 900px; margin: 0 auto; }
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+  .card {
+    border: 1px solid #C8DDD6;
+    border-radius: 12px;
+    padding: 28px 24px;
+    text-decoration: none; color: #1a1a1a;
+    transition: all 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+  .card h3 { font-family: 'Zilla Slab', serif; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .card .meta { color: #3D7A68; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+  .card p { font-size: 13px; color: #52525B; line-height: 1.7; }
+
+  /* Dark section */
+  .dark-section {
+    background: #0F1B2D;
+    padding: 48px;
+    color: white;
+  }
+  .dark-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; }
+  .dark-section h2 {
+    font-family: 'Zilla Slab', serif;
+    font-size: 24px; font-weight: 700; color: rgba(255,255,255,0.9); margin-bottom: 16px;
+  }
+  .dark-section p { font-size: 14px; line-height: 1.85; color: rgba(255,255,255,0.5); }
+  .dark-section a { color: #6BB8A5; text-decoration: none; }
+  .price-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 32px; text-align: center;
+  }
+  .price-card .big { font-family: 'Zilla Slab', serif; font-size: 48px; font-weight: 700; color: #6BB8A5; }
+  .price-card .label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+  /* Footer */
+  .footer {
+    background: #0F1B2D;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 24px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: rgba(255,255,255,0.4);
+  }
+  .footer a { color: rgba(255,255,255,0.4); text-decoration: none; margin-left: 16px; }
+</style>
+</head>
+<body>
+<div class="preview">
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-badge">LQP</div>
+      <div>Lac Qui Parle<small>Lake Association</small></div>
+    </div>
+    <div class="nav">
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Projects</a>
+      <a href="#">Tournament</a>
+      <a href="#">League</a>
+      <a href="#">Gallery</a>
+      <a href="#">Membership</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div style="max-width: 900px; margin: 0 auto;">
+      <div class="hero-tag">Est. 1982 &middot; Montevideo, Minnesota &middot; Non-Profit</div>
+      <h1>Welcome to The<br><em>Lac Qui Parle</em><br>Lake Association</h1>
+    </div>
+    <img src="../public/images/original/header-1382410480.jpg" alt="Lake">
+  </div>
+
+  <div class="content">
+    <div class="content-inner">
+      <div>
+        <div class="tag">About the Association</div>
+        <h2>Welcome to The Lac Qui Parle Lake Association</h2>
+        <p>Walleye and waterfowl are two things that come to mind when outdoorsman around Minnesota hear the words Lac Qui Parle Lake. Lac Qui Parle has a tradition of being one of the best walleye fisheries in the state.</p>
+        <p>The Lac Qui Parle Lake Association was created in 1982 as a non-profit organization working in conjunction with the Minnesota DNR.</p>
+      </div>
+      <div>
+        <div class="board">
+          <h3>Board of Directors</h3>
+          <p>Scott Monson, Steve Mitlyng,<br>Joe Bungarden, Pete McGinty<br>Andy Johnson, Brett Jacobs and Gary Groothius</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="cards">
+    <div class="cards-inner">
+      <div class="tag">What We Do</div>
+      <h2 style="font-family:'Zilla Slab',serif;font-size:28px;font-weight:700;color:#1a1a1a;">Lake Projects &amp; Events</h2>
+      <div class="cards-grid">
+        <a href="#" class="card">
+          <div class="tag">Annual Event</div>
+          <h3>Walleye Tournament</h3>
+          <div class="meta">46th Annual &middot; June 6, 2026</div>
+          <p>All Tournament Information is updated late March 2026.</p>
+        </a>
+        <a href="#" class="card">
+          <div class="tag">Summer Season</div>
+          <h3>LQP Fishing League</h3>
+          <div class="meta">2026 Walleye League</div>
+          <p>Weekly walleye league competition with roster and results.</p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="dark-section">
+    <div class="dark-inner">
+      <div>
+        <div class="tag" style="color: #6BB8A5;">Fin-Clipped Walleyes</div>
+        <h2>Keep an eye out for fin clipped walleyes being caught.</h2>
+        <p>If they have a fin clipped on the bottom left of the fish, they were stocked as a young of the year fish. Email <a href="#">minnkotatackle@yahoo.com</a>.</p>
+      </div>
+      <div class="price-card">
+        <div class="big">$10</div>
+        <div class="label">Yearly Dues</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>© 2026 Lac Qui Parle Lake Association</div>
+    <div>
+      <a href="#">About</a>
+      <a href="#">Projects</a>
+      <a href="#">Tournament</a>
+      <a href="#">Membership</a>
+      <a href="#">minnkotatackle@yahoo.com</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

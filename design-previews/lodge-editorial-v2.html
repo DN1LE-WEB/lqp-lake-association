@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LQP Lake - Lodge Editorial v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --cream-dark: #EDE6D8;
+    --copper: #B87333;
+    --copper-light: #D4956A;
+    --copper-muted: rgba(184,115,51,0.12);
+    --forest: #2C4A3E;
+    --forest-deep: #1A2F27;
+    --forest-light: #3D6B5A;
+    --ink: #1C1917;
+    --stone: #78716C;
+    --warm-white: #FDFBF7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Header */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 0 48px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(26,47,39,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(184,115,51,0.15);
+  }
+
+  .logo {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .logo-mark {
+    width: 38px;
+    height: 38px;
+    background: var(--copper);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--forest-deep);
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.5px;
+  }
+
+  .logo small {
+    display: block;
+    font-family: 'Outfit', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--copper-light);
+    margin-top: 1px;
+  }
+
+  nav { display: flex; gap: 28px; }
+
+  nav a {
+    color: rgba(245,240,232,0.6);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  nav a:hover { color: var(--cream); }
+
+  /* ============================================
+     HERO - Full bleed, image-forward
+     ============================================ */
+  .hero {
+    min-height: 100vh;
+    background: var(--forest-deep);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+  }
+
+  .hero-text {
+    padding: 160px 80px 100px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-tag {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--copper);
+    font-weight: 500;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--copper);
+  }
+
+  .hero h1 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 52px;
+    line-height: 1.15;
+    font-weight: 700;
+    color: var(--cream);
+    max-width: 520px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--copper-light);
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    line-height: 1.8;
+    color: rgba(245,240,232,0.55);
+    font-weight: 300;
+    max-width: 420px;
+    margin-top: 28px;
+  }
+
+  .hero-image {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hero-image .placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(245,240,232,0.08);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* Diagonal fade between hero and next section */
+  .hero-fade {
+    position: relative;
+    height: 160px;
+    background: var(--forest-deep);
+    overflow: hidden;
+  }
+
+  .hero-fade::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--cream);
+    clip-path: polygon(0 40%, 100% 0%, 100% 100%, 0% 100%);
+  }
+
+  /* Copper accent line floating over the transition */
+  .hero-fade::before {
+    content: '';
+    position: absolute;
+    top: 38%;
+    left: 5%;
+    right: 5%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--copper), transparent);
+    z-index: 2;
+    opacity: 0.4;
+  }
+
+  /* ============================================
+     WELCOME - Overlapping cards, organic feel
+     ============================================ */
+  .welcome {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 48px 100px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .section-tag {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--copper);
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .welcome h2 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 34px;
+    line-height: 1.3;
+    margin-bottom: 24px;
+  }
+
+  .welcome p {
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--stone);
+    margin-bottom: 16px;
+  }
+
+  /* Board card - overlaps into next section area */
+  .welcome-right {
+    position: relative;
+    padding-top: 20px;
+  }
+
+  .board-card {
+    background: var(--forest-deep);
+    color: var(--cream);
+    padding: 36px;
+    position: relative;
+  }
+
+  .board-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--copper);
+  }
+
+  .board-card h3 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  .board-card p {
+    color: rgba(245,240,232,0.55);
+    font-size: 14px;
+    line-height: 2;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 2px;
+  }
+
+  .stat {
+    background: var(--warm-white);
+    padding: 24px;
+    border: 1px solid var(--cream-dark);
+  }
+
+  .stat-num {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--forest);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-top: 2px;
+  }
+
+  /* ============================================
+     Transition: cream → forest (gradual blend)
+     ============================================ */
+  .blend-to-dark {
+    height: 200px;
+    background: linear-gradient(
+      180deg,
+      var(--cream) 0%,
+      var(--cream-dark) 30%,
+      #A8B09A 55%,
+      var(--forest) 80%,
+      var(--forest-deep) 100%
+    );
+    position: relative;
+  }
+
+  .blend-to-dark::after {
+    content: '';
+    position: absolute;
+    bottom: 40%;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--copper), transparent);
+    opacity: 0.25;
+  }
+
+  /* ============================================
+     FEATURES - Dark section, editorial layout
+     ============================================ */
+  .features {
+    background: var(--forest-deep);
+    color: var(--cream);
+    padding: 80px 48px 100px;
+  }
+
+  .features-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .features-header {
+    margin-bottom: 60px;
+  }
+
+  .features-header h2 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 34px;
+  }
+
+  .features-header p {
+    color: rgba(245,240,232,0.4);
+    margin-top: 10px;
+    font-size: 15px;
+  }
+
+  /* Asymmetric editorial layout instead of 3-column grid */
+  .features-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .feature-item {
+    padding: 44px 36px;
+    background: var(--forest);
+    text-decoration: none;
+    color: var(--cream);
+    transition: background 0.3s;
+    position: relative;
+    display: block;
+  }
+
+  .feature-item:hover {
+    background: var(--forest-light);
+  }
+
+  .feature-item.span-full {
+    grid-column: 1 / -1;
+  }
+
+  .feature-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--copper);
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .feature-item h3 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .feature-item p {
+    color: rgba(245,240,232,0.45);
+    font-size: 14px;
+    line-height: 1.7;
+    max-width: 500px;
+  }
+
+  .feature-meta {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--copper-light);
+    letter-spacing: 0.5px;
+  }
+
+  /* ============================================
+     Transition: dark → cream (organic overlap)
+     ============================================ */
+  .blend-to-light {
+    height: 180px;
+    background: linear-gradient(
+      180deg,
+      var(--forest-deep) 0%,
+      var(--forest) 35%,
+      #6B8F7B 55%,
+      var(--cream-dark) 80%,
+      var(--cream) 100%
+    );
+    position: relative;
+  }
+
+  /* ============================================
+     STORY / Stocking section - warm, informational
+     ============================================ */
+  .story {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 48px 100px;
+  }
+
+  .story-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .story h2 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 30px;
+    line-height: 1.35;
+    margin-bottom: 20px;
+  }
+
+  .story h2 em {
+    font-style: italic;
+    color: var(--copper);
+  }
+
+  .story p {
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--stone);
+    margin-bottom: 14px;
+  }
+
+  .story-aside {
+    background: var(--forest-deep);
+    color: var(--cream);
+    padding: 40px;
+    position: relative;
+    margin-top: 20px;
+  }
+
+  .story-aside::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 24px;
+    right: 24px;
+    height: 3px;
+    background: var(--copper);
+  }
+
+  .aside-big {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--copper);
+  }
+
+  .aside-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.45);
+    margin-top: 4px;
+  }
+
+  .aside-note {
+    margin-top: 20px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(245,240,232,0.5);
+  }
+
+  /* ============================================
+     FOOTER - minimal, warm
+     ============================================ */
+  .footer-transition {
+    height: 120px;
+    background: linear-gradient(
+      180deg,
+      var(--cream) 0%,
+      var(--cream-dark) 50%,
+      var(--ink) 100%
+    );
+  }
+
+  footer {
+    background: var(--ink);
+    color: rgba(245,240,232,0.4);
+    padding: 48px 48px 40px;
+  }
+
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 48px;
+  }
+
+  footer h4 {
+    font-family: 'Libre Baskerville', serif;
+    color: var(--cream);
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+
+  footer p, footer a {
+    font-size: 13px;
+    line-height: 1.9;
+    color: rgba(245,240,232,0.35);
+    text-decoration: none;
+  }
+
+  footer a:hover { color: var(--copper-light); }
+
+  .footer-copy {
+    max-width: 1100px;
+    margin: 32px auto 0;
+    padding-top: 20px;
+    border-top: 1px solid rgba(245,240,232,0.06);
+    font-size: 11px;
+    color: rgba(245,240,232,0.18);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">
+    <div class="logo-mark">LQP</div>
+    <div>Lac Qui Parle<small>Lake Association</small></div>
+  </a>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Projects</a>
+    <a href="#">Tournament</a>
+    <a href="#">League</a>
+    <a href="#">Gallery</a>
+    <a href="#">Membership</a>
+  </nav>
+</header>
+
+<!-- HERO: Split - text left, image right -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-tag">Est. 1982 &middot; Montevideo, Minnesota</div>
+    <h1>Preserving Minnesota's <em>Premier Walleye</em> Fishery</h1>
+    <p class="hero-desc">For over forty years, the Lac Qui Parle Lake Association has worked alongside the Minnesota DNR to keep one of the state's finest walleye traditions alive.</p>
+  </div>
+  <div class="hero-image">
+    <img src="../public/images/original/7332574_orig.jpg" alt="Walleye fishing on Lac Qui Parle Lake">
+  </div>
+</section>
+
+<!-- Diagonal transition hero → cream -->
+<div class="hero-fade"></div>
+
+<!-- WELCOME -->
+<section class="welcome">
+  <div>
+    <div class="section-tag">About the Association</div>
+    <h2>Walleye, Waterfowl &amp; Community Since 1982</h2>
+    <p>Walleye and waterfowl are two things that come to mind when outdoorsmen around Minnesota hear the words Lac Qui Parle Lake. The lake has a long tradition of being one of the best walleye fisheries in the state.</p>
+    <p>Since its inception, the Association has worked in conjunction with the Minnesota DNR, providing funding for walleye stocking programs, fishing piers, boat ramps and rip rap projects on the erodible shorelines.</p>
+  </div>
+  <div class="welcome-right">
+    <div class="board-card">
+      <h3>Board of Directors</h3>
+      <p>Scott Monson &middot; Steve Mitlyng &middot; Joe Bungarden &middot; Pete McGinty &middot; Andy Johnson &middot; Brett Jacobs &middot; Gary Groothius</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">1982</div>
+        <div class="stat-label">Established</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">25K</div>
+        <div class="stat-label">Stocking Goal</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">46th</div>
+        <div class="stat-label">Tournament</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">$12K</div>
+        <div class="stat-label">Recent Donation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Gradual blend: cream → dark forest -->
+<div class="blend-to-dark"></div>
+
+<!-- FEATURES: Asymmetric editorial grid -->
+<section class="features">
+  <div class="features-inner">
+    <div class="features-header">
+      <div class="section-tag" style="color: var(--copper-light);">What We Do</div>
+      <h2>Lake Projects &amp; Events</h2>
+      <p>Conservation, community fishing, and stewardship of Lac Qui Parle Lake.</p>
+    </div>
+    <div class="features-layout">
+      <a href="#" class="feature-item">
+        <div class="feature-label">Annual Event</div>
+        <h3>Walleye Tournament</h3>
+        <p>One of Minnesota's longest-running walleye fishing tournaments, drawing anglers from across the state every June.</p>
+        <span class="feature-meta">46th Annual &middot; Saturday, June 6, 2026</span>
+      </a>
+      <a href="#" class="feature-item">
+        <div class="feature-label">Summer Season</div>
+        <h3>Fishing League</h3>
+        <p>Weekly walleye competition throughout the summer with season standings and weekly weigh-ins.</p>
+        <span class="feature-meta">2026 Season &middot; Results Updated Weekly</span>
+      </a>
+      <a href="#" class="feature-item span-full">
+        <div class="feature-label">Conservation</div>
+        <h3>Lake Association Projects</h3>
+        <p>From walleye stocking programs with the MN DNR to shoreline erosion protection, fishing pier construction, boat ramp improvements, and youth fishing education &mdash; your support makes these projects happen. Recently donated $12,000 to Tri-County Let's Go Fishing.</p>
+        <span class="feature-meta">Walleye Stocking &middot; Shoreline Protection &middot; Fishing Piers &middot; Youth Activities</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Gradual blend: dark → cream -->
+<div class="blend-to-light"></div>
+
+<!-- STORY: Stocking / fin-clip info -->
+<section class="story">
+  <div class="story-layout">
+    <div>
+      <div class="section-tag">Walleye Stocking Program</div>
+      <h2>Helping stock <em>25,000 walleyes</em> in Lac Qui Parle Lake</h2>
+      <p>The LQP Lake Association funds walleye stocking in partnership with the Minnesota DNR. Young-of-the-year fish measuring 7&ndash;9 inches are stocked each fall with the bottom left pectoral fin clipped for tracking.</p>
+      <p>If you catch a walleye with a clipped fin, it was stocked through our program. We'd love to hear about it &mdash; email us at minnkotatackle@yahoo.com.</p>
+      <p>Membership dues are $10 per year. Every dollar goes directly toward lake improvement and conservation projects. Forms are available on the membership page.</p>
+    </div>
+    <div class="story-aside">
+      <div class="aside-big">$10</div>
+      <div class="aside-label">Annual Membership</div>
+      <p class="aside-note">PO Box 66<br>Montevideo, MN 56265<br><br>All donations are tax-deductible and go directly toward lake projects.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer transition -->
+<div class="footer-transition"></div>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <h4>Lac Qui Parle Lake Association</h4>
+      <p>Preserving Minnesota's premier walleye fishery since 1982. A non-profit organization dedicated to the betterment of Lac Qui Parle Lake.</p>
+    </div>
+    <div>
+      <h4>Navigate</h4>
+      <p><a href="#">Our Mission</a><br><a href="#">Lake Projects</a><br><a href="#">Tournament</a><br><a href="#">Fishing League</a><br><a href="#">Photo Gallery</a><br><a href="#">Membership</a></p>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <p>PO Box 66<br>Montevideo, MN 56265<br><a href="#">minnkotatackle@yahoo.com</a><br><br><a href="#">Facebook</a></p>
+    </div>
+  </div>
+  <div class="footer-copy">&copy; 2026 Lac Qui Parle Lake Association. All rights reserved.</div>
+</footer>
+
+</body>
+</html>
