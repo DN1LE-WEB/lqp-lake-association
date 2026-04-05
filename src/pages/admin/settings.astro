@@ -1,0 +1,29 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getDB } from '../../lib/db';
+import SettingsEditor from '../../components/admin/SettingsEditor';
+
+const db = getDB(Astro);
+const { results } = await db.prepare(
+  "SELECT key, value FROM settings WHERE key != 'admin_password_hash'"
+).all();
+
+const settings: Record<string, string> = {};
+for (const row of results as any[]) {
+  settings[row.key] = row.value || '';
+}
+---
+
+<AdminLayout title="Settings">
+  <div class="max-w-2xl">
+    <p class="text-gray-600 mb-6">Manage site settings and admin password.</p>
+    <SettingsEditor
+      client:only="react"
+      site_name={settings.site_name || ''}
+      contact_email={settings.contact_email || ''}
+      mailing_address={settings.mailing_address || ''}
+      facebook_url={settings.facebook_url || ''}
+    />
+  </div>
+</AdminLayout>
