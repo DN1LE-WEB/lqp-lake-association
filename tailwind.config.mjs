@@ -15,7 +15,7 @@ export default {
           light: '#EDE5D0',
           pale: '#FAF7F0',
         },
-        stone: {
+        prairie: {
           DEFAULT: '#8B8178',
           dark: '#5C554E',
         },

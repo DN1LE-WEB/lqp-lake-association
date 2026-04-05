@@ -80,7 +80,7 @@
 
   /* Prose styling for content pages */
   .prose-prairie {
-    @apply text-stone leading-relaxed;
+    @apply text-prairie leading-relaxed;
   }
 
   .prose-prairie h2 {
