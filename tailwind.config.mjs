@@ -5,29 +5,24 @@ export default {
     extend: {
       colors: {
         sage: {
-          DEFAULT: '#7C8C6E',
-          light: '#A8B89A',
+          DEFAULT: '#5C6B52',
+          light: '#7C8C6E',
           pale: '#E8EDE3',
           mist: '#D5DDD0',
         },
         wheat: {
           DEFAULT: '#D4C5A0',
           light: '#EDE5D0',
-          pale: '#FAF7F0',
+          pale: '#F5F2EB',
         },
         prairie: {
-          DEFAULT: '#8B8178',
-          dark: '#5C554E',
-        },
-        bark: {
-          DEFAULT: '#3D352E',
-          deep: '#2A241F',
+          DEFAULT: '#52525B',
+          dark: '#3F3F46',
         },
         rust: {
-          DEFAULT: '#B85C38',
-          light: '#D4785A',
+          DEFAULT: '#9A4A2A',
+          light: '#B85C38',
         },
-        linen: '#FBF9F4',
       },
       fontFamily: {
         display: ['"Zilla Slab"', 'Georgia', 'serif'],

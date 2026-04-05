@@ -2,36 +2,31 @@
 const currentYear = new Date().getFullYear();
 ---
 
-<div class="blend-dark-to-footer"></div>
-
-<footer style="background: #1E1A16;" class="px-6 pb-9 pt-10 text-wheat lg:px-12">
-  <div class="mx-auto grid max-w-[1000px] gap-12 md:grid-cols-3">
+<footer style="background: #0F1B2D;" class="px-6 py-8 lg:px-12">
+  <div class="mx-auto flex max-w-[1000px] flex-wrap items-start justify-between gap-8">
     <div>
-      <h4 class="mb-3 font-display text-[15px] text-wheat-light">Lac Qui Parle Lake Association</h4>
-      <p class="text-[13px] leading-[1.9] text-wheat/40">Preserving Minnesota's premier walleye fishery since 1982. A non-profit organization dedicated to the betterment of Lac Qui Parle Lake.</p>
+      <div class="font-display text-sm font-bold text-white/80">Lac Qui Parle Lake Association</div>
+      <div class="mt-1 text-xs text-white/50">Non-profit &middot; Est. 1982 &middot; Montevideo, MN</div>
     </div>
-    <div>
-      <h4 class="mb-3 font-display text-[15px] text-wheat-light">Navigate</h4>
-      <div class="space-y-1 text-[13px] leading-[1.9]">
-        <a href="/" class="block text-wheat/40 transition-opacity hover:opacity-70">Home</a>
-        <a href="/about" class="block text-wheat/40 transition-opacity hover:opacity-70">Our Mission</a>
-        <a href="/projects" class="block text-wheat/40 transition-opacity hover:opacity-70">Lake Association Projects</a>
-        <a href="/tournament" class="block text-wheat/40 transition-opacity hover:opacity-70">Walleye Tournament</a>
-        <a href="/fishing-league" class="block text-wheat/40 transition-opacity hover:opacity-70">Fishing League</a>
-        <a href="/gallery" class="block text-wheat/40 transition-opacity hover:opacity-70">Photo Gallery</a>
-        <a href="/membership" class="block text-wheat/40 transition-opacity hover:opacity-70">Membership</a>
+    <div class="flex gap-8 text-xs text-white/50">
+      <div class="space-y-1">
+        <a href="/about" class="block no-underline hover:text-white/60">Our Mission</a>
+        <a href="/projects" class="block no-underline hover:text-white/60">Projects</a>
+        <a href="/tournament" class="block no-underline hover:text-white/60">Tournament</a>
+        <a href="/fishing-league" class="block no-underline hover:text-white/60">Fishing League</a>
+      </div>
+      <div class="space-y-1">
+        <a href="/gallery" class="block no-underline hover:text-white/60">Gallery</a>
+        <a href="/membership" class="block no-underline hover:text-white/60">Membership</a>
+        <a href="https://www.facebook.com/lqplakeassociation/" target="_blank" rel="noopener" class="block no-underline hover:text-white/60">Facebook</a>
       </div>
     </div>
-    <div>
-      <h4 class="mb-3 font-display text-[15px] text-wheat-light">Contact</h4>
-      <div class="text-[13px] leading-[1.9] text-wheat/40">
-        <p>PO Box 66<br />Montevideo, MN 56265</p>
-        <p class="mt-2"><a href="mailto:minnkotatackle@yahoo.com" class="text-sage-light no-underline hover:opacity-80">minnkotatackle@yahoo.com</a></p>
-        <p class="mt-2"><a href="https://www.facebook.com/lqplakeassociation/" target="_blank" rel="noopener" class="text-sage-light no-underline hover:opacity-80">Facebook</a></p>
-      </div>
+    <div class="text-xs text-white/50">
+      <div>PO Box 66, Montevideo, MN 56265</div>
+      <a href="mailto:minnkotatackle@yahoo.com" class="text-sage-light no-underline hover:opacity-80">minnkotatackle@yahoo.com</a>
     </div>
   </div>
-  <div class="mx-auto mt-7 max-w-[1000px] border-t border-wheat/[0.06] pt-5 text-[11px] text-wheat/20">
-    &copy; {currentYear} Lac Qui Parle Lake Association. All rights reserved.
+  <div class="mx-auto mt-6 max-w-[1000px] border-t border-white/[0.06] pt-4 text-[11px] text-white/50">
+    &copy; {currentYear} Lac Qui Parle Lake Association
   </div>
 </footer>
