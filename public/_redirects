@@ -1,0 +1,5 @@
+# Specific old page redirects
+/46th-annual-2026-rosterresults.html /tournament/2026 301
+
+# Catch-all: any old .html backlinks go to homepage
+/*.html / 301
