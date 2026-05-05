@@ -51,6 +51,12 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
   const [newDocUrl, setNewDocUrl] = useState('');
   const [newDocFileType, setNewDocFileType] = useState('pdf');
   const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [newPhotoCaption, setNewPhotoCaption] = useState('');
+  const [editingCaptionId, setEditingCaptionId] = useState<number | null>(null);
+  const [editingCaptionValue, setEditingCaptionValue] = useState('');
+  const [dragPhotoId, setDragPhotoId] = useState<number | null>(null);
+  const [dragOverPhotoId, setDragOverPhotoId] = useState<number | null>(null);
 
   const fetchDocuments = () => {
     fetch(`/api/tournament-documents/${id}`)
@@ -59,12 +65,16 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
       .catch(() => {});
   };
 
+  const fetchPhotos = () => {
+    fetch(`/api/tournament-photos/${id}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setPhotos(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  };
+
   useEffect(() => {
     if (!isNew) {
-      fetch(`/api/tournament-photos/${id}`)
-        .then(r => r.ok ? r.json() : [])
-        .then(data => setPhotos(Array.isArray(data) ? data : []))
-        .catch(() => {});
+      fetchPhotos();
       fetchDocuments();
     }
   }, [id, isNew]);
@@ -134,6 +144,102 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
     } finally {
       setUploadingDoc(false);
     }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingPhoto(true);
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append('file', file);
+        const upRes = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!upRes.ok) {
+          alert(`Upload failed for ${file.name}.`);
+          continue;
+        }
+        const upData = await upRes.json();
+        const captionForThis = files.length === 1 ? newPhotoCaption : '';
+        const addRes = await fetch(`/api/tournament-photos/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: upData.url, caption: captionForThis }),
+        });
+        if (!addRes.ok) {
+          alert(`Failed to attach ${file.name}.`);
+        }
+      }
+      setNewPhotoCaption('');
+      fetchPhotos();
+    } catch {
+      alert('Photo upload failed.');
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: number) => {
+    if (!confirm('Delete this photo?')) return;
+    try {
+      const res = await fetch(`/api/tournament-photos/${id}?photoId=${photoId}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchPhotos();
+      } else {
+        alert('Failed to delete photo.');
+      }
+    } catch {
+      alert('Failed to delete photo.');
+    }
+  };
+
+  const handleSaveCaption = async (photoId: number) => {
+    try {
+      const res = await fetch(`/api/tournament-photos/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: photoId, caption: editingCaptionValue }),
+      });
+      if (res.ok) {
+        setPhotos(prev => prev.map(p => p.id === photoId ? { ...p, caption: editingCaptionValue } : p));
+        setEditingCaptionId(null);
+        setEditingCaptionValue('');
+      } else {
+        alert('Failed to save caption.');
+      }
+    } catch {
+      alert('Failed to save caption.');
+    }
+  };
+
+  const persistOrder = async (ordered: Photo[]) => {
+    try {
+      await fetch(`/api/tournament-photos/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: ordered.map(p => p.id) }),
+      });
+    } catch {
+      alert('Failed to save new order.');
+      fetchPhotos();
+    }
+  };
+
+  const handlePhotoDrop = (targetId: number) => {
+    if (dragPhotoId == null || dragPhotoId === targetId) return;
+    setPhotos(prev => {
+      const fromIdx = prev.findIndex(p => p.id === dragPhotoId);
+      const toIdx = prev.findIndex(p => p.id === targetId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, moved);
+      persistOrder(next);
+      return next;
+    });
+    setDragPhotoId(null);
+    setDragOverPhotoId(null);
   };
 
   const handleSave = async () => {
@@ -425,26 +531,125 @@ export default function TournamentEditor({ id, title, year, annual_number, date,
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Tournament Photos</label>
           {photos.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12, marginBottom: 12 }}>
-              {photos.map((photo) => (
-                <div key={photo.id} style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #d1d5db' }}>
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || 'Tournament photo'}
-                    style={{ width: '100%', height: 120, objectFit: 'cover' }}
-                  />
-                  {photo.caption && (
-                    <div style={{ padding: '4px 8px', fontSize: 12, color: '#6b7280' }}>{photo.caption}</div>
-                  )}
-                </div>
-              ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginBottom: 12 }}>
+              {photos.map((photo) => {
+                const isDragging = dragPhotoId === photo.id;
+                const isOver = dragOverPhotoId === photo.id && dragPhotoId !== photo.id;
+                const isEditing = editingCaptionId === photo.id;
+                return (
+                  <div
+                    key={photo.id}
+                    draggable={!isEditing}
+                    onDragStart={() => setDragPhotoId(photo.id)}
+                    onDragOver={(e) => { e.preventDefault(); if (dragOverPhotoId !== photo.id) setDragOverPhotoId(photo.id); }}
+                    onDragLeave={() => { if (dragOverPhotoId === photo.id) setDragOverPhotoId(null); }}
+                    onDrop={(e) => { e.preventDefault(); handlePhotoDrop(photo.id); }}
+                    onDragEnd={() => { setDragPhotoId(null); setDragOverPhotoId(null); }}
+                    style={{
+                      borderRadius: 8,
+                      overflow: 'hidden',
+                      border: isOver ? '2px solid #3D7A68' : '1px solid #d1d5db',
+                      background: '#fff',
+                      opacity: isDragging ? 0.4 : 1,
+                      cursor: isEditing ? 'default' : 'grab',
+                      transition: 'border-color 0.15s, opacity 0.15s',
+                    }}
+                  >
+                    <div style={{ position: 'relative' }}>
+                      <img
+                        src={photo.url}
+                        alt={photo.caption || 'Tournament photo'}
+                        style={{ width: '100%', height: 120, objectFit: 'cover', display: 'block' }}
+                      />
+                      <button
+                        onClick={() => handleDeletePhoto(photo.id)}
+                        title="Delete photo"
+                        style={{
+                          position: 'absolute',
+                          top: 6,
+                          right: 6,
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          border: 'none',
+                          background: 'rgba(0,0,0,0.6)',
+                          color: 'white',
+                          fontSize: 14,
+                          lineHeight: 1,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <div style={{ padding: '6px 8px' }}>
+                      {isEditing ? (
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <input
+                            type="text"
+                            value={editingCaptionValue}
+                            onChange={(e) => setEditingCaptionValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveCaption(photo.id);
+                              if (e.key === 'Escape') { setEditingCaptionId(null); setEditingCaptionValue(''); }
+                            }}
+                            autoFocus
+                            placeholder="Caption"
+                            style={{ flex: 1, fontSize: 12, padding: '4px 6px', border: '1px solid #d1d5db', borderRadius: 4, outline: 'none', minWidth: 0 }}
+                          />
+                          <button
+                            onClick={() => handleSaveCaption(photo.id)}
+                            style={{ background: '#3D7A68', color: 'white', border: 'none', borderRadius: 4, fontSize: 11, fontWeight: 600, padding: '0 8px', cursor: 'pointer' }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => { setEditingCaptionId(photo.id); setEditingCaptionValue(photo.caption || ''); }}
+                          style={{ fontSize: 12, color: photo.caption ? '#374151' : '#9ca3af', cursor: 'text', minHeight: 18 }}
+                        >
+                          {photo.caption || 'Add caption…'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 12 }}>No photos yet.</p>
           )}
-          <p style={{ fontSize: 12, color: '#6b7280' }}>
-            Photos are managed via the database. Place image files in <code>public/images/tournaments/</code> and add records to the <code>tournament_photos</code> table.
-          </p>
+
+          <div style={{ border: '1px dashed #d1d5db', borderRadius: 8, padding: 12, background: '#fafafa' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                multiple
+                onChange={handlePhotoUpload}
+                disabled={uploadingPhoto}
+                style={{ fontSize: 13 }}
+              />
+              <input
+                type="text"
+                value={newPhotoCaption}
+                onChange={(e) => setNewPhotoCaption(e.target.value)}
+                placeholder="Caption (single upload only)"
+                disabled={uploadingPhoto}
+                style={{ ...inputStyle, flex: 1, minWidth: 180, padding: '6px 10px', fontSize: 13 }}
+              />
+              {uploadingPhoto && <span style={{ fontSize: 12, color: '#6b7280' }}>Uploading…</span>}
+            </div>
+            {photos.length > 1 && (
+              <p style={{ fontSize: 11, color: '#6b7280', margin: '8px 0 0 0' }}>
+                Drag photos to reorder. Click a caption to edit it.
+              </p>
+            )}
+          </div>
         </div>
       )}
 
